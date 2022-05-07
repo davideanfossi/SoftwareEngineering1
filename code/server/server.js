@@ -52,6 +52,17 @@ app.delete('/api/testdb', (req,res) => {
   }
 });
 
+app.delete2('/api/testdb2', (req,res) => {
+  try {
+    db.dropTable();
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+
+
 
 
 // activate the server
