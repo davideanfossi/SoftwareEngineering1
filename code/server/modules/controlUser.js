@@ -1,13 +1,15 @@
 // 
 
-// DA FARE: - implementare il log-in e non so come si fa
+// DA FARE: - implementare il log-in e il log-out non so come si fa
 //          - implementare l'enum
 
 // FATTI: - getUsers
 //        - createUser
 //        - getUserInfo
 //        - getSuppliers
-//        - 
+//        - allSessions (6)
+//        - modifyUserRught
+//        - deleteUser
 
 class controlUser {
 
@@ -22,7 +24,7 @@ class controlUser {
 
     dropTable() {
         return new Promise((resolve, reject) => {
-            const sql = 'DROP TABLE IF EXISTS NAMES';
+            const sql = 'DROP TABLE IF EXISTS USER';
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
@@ -86,8 +88,35 @@ class controlUser {
         });
     }
 
+    // SOLO TEST
+    getAll() {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM USER`;
+
+            this.db.all(sql, [], (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                const users = rows.map((r) => (
+                    {
+                        id: r.ID,
+                        username: r.USERNAME,
+                        name: r.NAME,
+                        surname: r.SURNAME,
+                        type: r.TYPE,
+                        psw: r.PASSWORD
+
+                    }
+                ));
+                resolve(users);
+            });
+        });
+    }
+
     // Serve a fare il controllo su username e type 
-    checkUser(data) {
+    checkUser(data, typeOfCheck) {
         return new Promise((resolve, reject) => {
             const sql = "SELECT USERNAME, TYPE FROM USER WHERE USERNAME = ? AND TYPE = ?"
             this.db.all(sql, [data.username, data.type], (err, rows) => {
@@ -98,10 +127,18 @@ class controlUser {
                     return;
                 }
 
-                if (rows.length > 0)
-                    reject(false)
-                else
-                    resolve(true);
+                if (typeOfCheck === 'newUser') {
+                    if (rows.length > 0)
+                        reject(false)
+                    else
+                        resolve(true);
+                }else{
+                    if (rows.length > 0)
+                        resolve('done')
+                    else
+                        reject('not found');
+                }
+
             })
         });
     }
@@ -143,7 +180,7 @@ class controlUser {
                     reject(err);
                     return;
                 }
-                
+
                 const info = rows.map((r) => (
                     {
                         id: r.ID,
@@ -159,7 +196,7 @@ class controlUser {
         });
     }
 
-    managerSession(data, type) {
+    session(data, type) {
         return new Promise((resolve, reject) => {
             const sql = "SELECT * FROM USER WHERE USERNAME = ? AND PASSWORD = ? AND TYPE = ?"
             this.db.all(sql, [data.username, data.password, type], (err, rows) => {
@@ -170,7 +207,7 @@ class controlUser {
                     return;
                 }
 
-                const managerInfo = rows.map((r) => (
+                const info = rows.map((r) => (
                     {
                         id: r.ID,
                         username: r.USERNAME,
@@ -179,14 +216,63 @@ class controlUser {
                 ));
 
                 if (rows.length > 0)
-                    resolve(managerInfo)
+                    resolve(info)
                 else
                     reject('data error');
             })
         });
     }
 
+    modifyUserRights(username, rights) {
+        return new Promise((resolve, reject) => {
+            const sql1 = "SELECT USERNAME, TYPE FROM USER WHERE USERNAME = ? AND TYPE = ?"
 
+            this.db.all(sql1, [username, rights.oldType], (err, rows) => {
+
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+
+                if (rows.length < 1)
+                    reject('not found');
+            });
+
+            const sql2 = "UPDATE USER SET TYPE = ? WHERE USERNAME = ?"
+
+            this.db.all(sql2, [rights.newType, username], (err, rows) => {
+
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+
+                console.log(rows);
+
+                resolve('done');
+            });
+
+
+        });
+    }
+
+    deleteUser(username, type) {
+        return new Promise((resolve, reject) => {
+
+            const sql = "DELETE FROM USER WHERE USERNAME = ? AND TYPE = ? "
+            this.db.all(sql, [username, type], (err, rows) => {
+
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve('done')
+            })
+        });
+    }
 }
 
 

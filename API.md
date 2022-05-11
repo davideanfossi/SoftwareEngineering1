@@ -683,6 +683,7 @@ Example of Request body
         "name":"Michael",
         "surname":"Jordan",
         "email":"michael.jordan@supplier.ezwh.com"
+        
     },...]
 ```
 
