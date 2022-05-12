@@ -845,6 +845,7 @@ Example of Request body
 - **Error responses**: `401 Unauthorized` (not logged in or wrong permissions), `422 Unprocessable Entity` (validation of username or of type failed or attempt to delete a manager/administrator), `503 Service Unavailable` (generic error).
 
 
+
 ## RESTOCK ORDER
 
 **Possible states:** ISSUED, DELIVERY, DELIVERED, TESTED, COMPLETEDRETURN, COMPLETED

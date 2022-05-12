@@ -1,15 +1,18 @@
 'use strict';
 const express = require('express');
+const controlOrder = require('./modules/controlOrder');
 // init express
 const controlUser = require('./modules/controlUser');
+const controlOrder = require('./modules/controlOrder')
 const db = new controlUser('EzWh');
+const db2 = new controlOrder('EzWh');
 
 const app = new express();
 const port = 3001;
 
 app.use(express.json());
 
-
+// <----------- CONTROL USER ----------->
 // GET 
 
 app.get('/api/users', async (req, res) => {
@@ -328,6 +331,63 @@ app.delete('/api/users/:username/:type', async (req, res) => {
       res.status(503).end()
   }
 })
+
+
+
+// <----------- CONTROL ORDER ----------->
+
+// GET
+
+app.get('/api/restockOrders', async (req, res) => {
+  try {
+    const restockOrders = await db2.getRestockOrders();
+    res.status(200).json(restockOrders);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/restockOrdersIssued', async (req, res) => {
+  try {
+    const issued = await db2.getIssuedRestockOrders();
+    res.status(200).json(issued);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/restockOrders/:id', async (req, res) => {
+
+  const id = req.params.id;
+
+  try {
+    const order = await db2.getRestockOrder(id);
+    res.status(200).json(order);
+  } catch (err) {
+    if (err.error === 'no restock order associated to id') {
+      res.status(404).json(error);
+    }
+    res.status(500).end();
+  }
+});
+
+app.get('/api/restockOrders/:id/returnItems', async (req, res) => {
+
+  const id = req.params.id;
+
+  try {
+    await db2.getRestockOrder(id);
+    const skuItems = db2.getSkuItemsByRestockOrder(id);
+    res.status(200).json(skuItems);
+  } catch (err) {
+    if (err.error === 'no restock order associated to id') {
+      res.status(404).json(error);
+    }
+    res.status(500).end();
+  }
+});
+
+
 
 // activate the server
 
