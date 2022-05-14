@@ -3,7 +3,7 @@ const express = require('express');
 const controlOrder = require('./modules/controlOrder');
 // init express
 const controlUser = require('./modules/controlUser');
-const controlOrder = require('./modules/controlOrder')
+const { json } = require('express');
 const db = new controlUser('EzWh');
 const db2 = new controlOrder('EzWh');
 
@@ -351,7 +351,7 @@ app.get('/api/restockOrdersIssued', async (req, res) => {
   try {
     const issued = await db2.getIssuedRestockOrders();
     res.status(200).json(issued);
-  } catch (err) {
+  } catch (err) { 
     res.status(500).end();
   }
 });
@@ -387,7 +387,324 @@ app.get('/api/restockOrders/:id/returnItems', async (req, res) => {
   }
 });
 
+// POST
 
+app.post('/api/restockOrder', async (req,res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let body = req.body;
+
+  if (body === undefined || body.issueDate === undefined || body.products === undefined || body.supplierId === undefined) {
+    console.log(body)
+    return res.status(422).json({ error: `Invalid body data` });
+  }
+
+  try {
+    await db2.newTableRestockOrder();
+    db2.newRestockOrder(body);
+    return res.status(201).end();
+  } catch(err){
+    console.log(err)
+    res.status(500).end();
+  }
+});
+
+// PUT
+
+app.put('/api/restockOrder/:id', async (req,res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let body = req.body;
+
+  if (body === undefined || body.newState === undefined) {
+    return res.status(422).json({ error: `Invalid body data` });
+  }
+
+  let id = req.params.id;
+
+  if(id === undefined || id<=0){
+    return res.status(422).json({ error: `Invalid params` });
+  }
+
+  try{
+    db2.modifyRestockOrderState(id, body.newState);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'no restock order associated to id')
+      res.status(404).json({error: `wrong id or order doesn't exist`})
+    else
+      res.status(503).end()
+  }
+});
+
+app.put('/api/restockOrder/:id/skuItems', async (req,res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let body = req.body;
+
+  if (body === undefined || body.skuItems === undefined) {
+    return res.status(422).json({ error: `Invalid body data` });
+  }
+
+  let id = req.params.id;
+
+  if(id === undefined || id<=0){
+    return res.status(422).json({ error: `Invalid params` });
+  }
+
+  try{
+    db2.modifyRestockOrderSKUs(id, body.skuItems);
+    res.status(200).end()
+  }catch(err){
+    console.log(err)
+    if(err = 'no restock order associated to id')
+      res.status(404).json({error: `wrong id or order doesn't exist`})
+    else
+      res.status(503).end()
+  }
+});
+
+app.put('/api/restockOrder/:id/transportNote', async (req,res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let body = req.body;
+
+  if (body === undefined || body.transportNote === undefined) {
+    return res.status(422).json({ error: `Invalid body data` });
+  }
+
+  let id = req.params.id;
+
+  if(id === undefined || id<=0){
+    return res.status(422).json({ error: `Invalid params` });
+  }
+
+  try{
+    db2.modifyRestockOrderNote(id, body.transportNote);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'no restock order associated to id')
+      res.status(404).json({error: `wrong id or order doesn't exist`})
+    else
+      res.status(503).end()
+  }
+});
+
+app.delete('/api/restockOrder/:id', (req,res)=>{
+  try {
+    let id = req.params.id;
+    if(id === undefined || id<=0){
+      return res.status(422).json({ error: `Invalid params` });
+    }
+
+    db2.deleteRestockOrder(id);
+    res.status(200).end()
+
+  } catch (err) {
+    if(err = 'no restock order associated to id')
+    res.status(404).json({error: `wrong id or order doesn't exist`})
+  else
+    res.status(503).end()
+  }
+});
+
+// <----------------- RETURN ORDERS ----------------->
+
+// GET
+app.get('/api/returnOrders', async (req, res) => {
+  try {
+    const restockOrders = await db2.getReturnOrders();
+    res.status(200).json(restockOrders);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/returnOrders/:id', async (req, res) => {
+
+  const id = req.params.id;
+
+  try {
+    const order = await db2.getReturnOrder(id);
+    res.status(200).json(order);
+  } catch (err) {
+    if (err.error === 'no return order associated to id') {
+      res.status(404).json(error);
+    }
+    res.status(500).end();
+  }
+});
+
+// POST
+
+app.post('/api/returnOrder', async (req,res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let body = req.body;
+
+  if (body === undefined || body.issueDate === undefined || body.products === undefined || body.supplierId === undefined) {
+    console.log(body)
+    return res.status(422).json({ error: `Invalid body data` });
+  }
+
+  try {
+    await db2.newTableReturnOrder();
+    db2.newReturnOrder(body);
+    return res.status(201).end();
+  } catch(err){
+    console.log(err)
+    res.status(500).end();
+  }
+});
+
+// DELETE
+
+app.delete('/api/returnOrder/:id', (req,res)=>{
+  try {
+    let id = req.params.id;
+    if(id === undefined || id<=0){
+      return res.status(422).json({ error: `Invalid params` });
+    }
+    db2.deleteReturnOrder(id);
+    res.status(200).end()
+  } catch (err) {
+    if(err = 'no return order associated to id')
+    res.status(404).json({error: `wrong id or order doesn't exist`})
+  else
+    res.status(503).end()
+  }
+});
+
+//<----------------- INTERNAL ORDER ----------------------->
+
+// GET
+
+app.get('/api/internalOrders', async (req, res) => {
+  try {
+    const restockOrders = await db2.getInternalOrders();
+    res.status(200).json(restockOrders);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/internalOrdersIssued', async (req, res) => {
+  try {
+    const restockOrders = await db2.getInternalOrdersIssued();
+    res.status(200).json(restockOrders);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/internalOrdersAccepted', async (req, res) => {
+  try {
+    const restockOrders = await db2.getInternalOrdersAccepted();
+    res.status(200).json(restockOrders);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/returnOrders/:id', async (req, res) => {
+
+  const id = req.params.id;
+
+  try {
+    const order = await db2.getInternalOrder(id);
+    res.status(200).json(order);
+  } catch (err) {
+    if (err.error === 'no internal order associated to id') {
+      res.status(404).json(error);
+    }
+    res.status(500).end();
+  }
+});
+
+// POST
+
+app.post('/api/internalOrders', async (req,res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let body = req.body;
+
+  if (body === undefined || body.issueDate === undefined || body.products === undefined || body.customerId === undefined) {
+    console.log(body)
+    return res.status(422).json({ error: `Invalid body data` });
+  }
+
+  try {
+    await db2.newTableInternalOrder();
+    db2.newInternalOrder(body);
+    return res.status(201).end();
+  } catch(err){
+    console.log(err)
+    res.status(500).end();
+  }
+});
+
+// PUT 
+
+app.put('/api/internalOrders/:id', async (req,res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let body = req.body;
+
+  if (body === undefined || body.newState === undefined) {
+    return res.status(422).json({ error: `Invalid body data` });
+  }
+
+  let id = req.params.id;
+
+  if(id === undefined || id<=0){
+    return res.status(422).json({ error: `Invalid params` });
+  }
+
+  try{
+    let products = []
+    if(body.products!==undefined){
+      products = JSON.parse(body.products)
+    }
+    db2.modifyInternalOrder(id, body.newState, products);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'no internal order associated to id')
+      res.status(404).json({error: `wrong id or order doesn't exist`})
+    else
+      res.status(503).end()
+  }
+});
+
+// DELETE
+
+app.delete('/api/internalOrders/:id', (req,res)=>{
+  try {
+    let id = req.params.id;
+    if(id === undefined || id<=0){
+      return res.status(422).json({ error: `Invalid params` });
+    }
+
+    db2.deleteInternalOrder(id);
+    res.status(200).end()
+
+  } catch (err) {
+    if(err = 'no internal order associated to id')
+    res.status(404).json({error: `wrong id or order doesn't exist`})
+  else
+    res.status(503).end()
+  }
+});
+
+// <------------------ ITEM ------------------->
+
+// GET
 
 // activate the server
 
