@@ -1,11 +1,14 @@
 'use strict';
 const express = require('express');
-const controlOrder = require('./modules/controlOrder');
 // init express
 const controlUser = require('./modules/controlUser');
-const { json } = require('express');
+const controlSku = require('./modules/controlSku');
+const controlOrder = require('./modules/controlOrder')
+const controlTest = require('./modules/controlTest')
 const db = new controlUser('EzWh.db');
+const db1 = new controlSku('EzWh.db');
 const db2 = new controlOrder('EzWh.db');
+const db3 = new controlTest('EzWh.db');
 
 const app = new express();
 const port = 3001;
@@ -704,6 +707,343 @@ app.delete('/api/internalOrders/:id', (req,res)=>{
     res.status(503).end()
   }
 });
+
+// <----------- CONTROL TEST descriptor ----------->
+// TODO manage permissions (managaer...) (401 Unauthorized)
+// check idsku exists
+// /api/skuitems/testResult why pass a rfid??
+// sku link to testdescriptors TODO GET
+
+app.get('/api/testDescriptors', async (req, res) => {
+  try {
+    const testDescriptorsList = await db3.getTestDescriptors();
+    res.status(200).json(testDescriptorsList);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/testDescriptors/:id', async (req, res) => {
+
+  if (!Number.isInteger(parseInt(req.params.id)))
+    res.status(422).json({error : "id is not a number"}).end();
+
+  try {
+    const testDescriptor = await db3.getTestDescriptorById(req.params.id);
+    res.status(200).json(testDescriptor);
+  } catch (err) {
+    if (err == "not found")
+      res.status(404).json(err).end();
+    else
+    res.status(500).end();
+  }
+});
+
+app.post('/api/testDescriptor', async (req, res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let testDescriptor = req.body;
+  
+  if (testDescriptor === undefined || testDescriptor.name === undefined || testDescriptor.procedureDescription === undefined || testDescriptor.idSKU === undefined ||
+    testDescriptor.name == '' || testDescriptor.procedureDescription == '' || testDescriptor.idSKU === '') {
+    return res.status(422).json({ error: `Invalid testDescriptor data` });
+  }
+
+  try {
+    await db3.newTableTestDescriptor();
+    // is check name id_sku combo good??
+    // await db3.checkTestDescriptor(testDescriptor, 'newTest');
+  } catch (err) {
+    return res.status(409).json({ error: `test with same name and id_sku already exists` });
+  }
+
+  // check also that id_sku exist!!!
+
+  try {
+    db3.createTestDescriptor(testDescriptor);
+    return res.status(201).end();
+
+  } catch(err){
+    res.status(500).end();
+  }
+  
+});
+
+app.put('/api/testDescriptor/:id', async (req, res) => {
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  } 
+
+  if (!Number.isInteger(parseInt(req.params.id)))
+  res.status(422).json({error : "id is not a number"}).end();
+
+  const newTestDescriptor = req.body;
+
+  if (newTestDescriptor === undefined || newTestDescriptor.newName === undefined || newTestDescriptor.newProcedureDescription === undefined || newTestDescriptor.newIdSKU === undefined || 
+    newTestDescriptor.newName === '' || newTestDescriptor.newProcedureDescription === '' || newTestDescriptor.newIdSKU === '') {
+
+    return res.status(422).json({ error: `Invalid data` });
+  } 
+
+  try{
+    await db3.modifyTestDescriptor(req.params.id, newTestDescriptor);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'not found')
+      //check also issku exist
+      res.status(404).json({error: `wrong id`})
+    else
+      res.status(503).end()
+  }
+})
+
+app.delete('/api/testDescriptor/:id', async (req, res) => {
+  
+  if (!Number.isInteger(parseInt(req.params.id)))
+  res.status(422).json({error : "id is not a number"}).end();
+
+  try{
+    await db3.deleteTestDescriptor(req.params.id);
+    res.status(204).end();
+  }catch(err){
+    if(err == "not found")
+      res.status(422).json({error: "id not found"}).end();
+    else
+      res.status(503).end();
+  }
+})
+
+// <----------- CONTROL TEST result ----------->
+
+app.get('/api/skuitems/:rfid/testResults', async (req, res) => {
+  if (!Number.isInteger(parseInt(req.params.rfid)))
+  res.status(422).json({error : "rfid is not a number"}).end();
+
+  try {
+    const testResultsList = await db3.getTestResults(req.params.rfid);
+    res.status(200).json(testResultsList);
+  } catch (err) {
+    if (err == "not found")
+      res.status(404).json({error: "no test result with this sku"}).end();
+    res.status(500).end();
+  }
+});
+
+app.get('/api/skuitems/:rfid/testResults/:id', async (req, res) => {
+  if (!Number.isInteger(parseInt(req.params.rfid)))
+  res.status(422).json({error : "rfid is not a number"}).end();
+
+  if (!Number.isInteger(parseInt(req.params.id)))
+  res.status(422).json({error : "id is not a number"}).end();
+
+  try {
+    const testResult = await db3.getTestResultById(req.params.rfid, req.params.id);
+    res.status(200).json(testResult);
+  } catch (err) {
+    if (err == "not found")
+      res.status(404).json({error: "no test result with this sku or id"}).end();
+    res.status(500).end();
+  }
+});
+
+app.post('/api/skuitems/testResult', async (req, res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let testResult = req.body;
+  
+  if (testResult === undefined || testResult.idTestDescriptor === undefined || testResult.Date === undefined || testResult.Result === undefined ||
+    testResult.idTestDescriptor == '' || testResult.Date == '' || testResult.Result === '') {
+    return res.status(422).json({ error: `Invalid testDescriptor data` });
+  }
+
+  try {
+    await db3.newTableTestResults();
+    // is check name id_sku combo good??
+    await db3.checkTestResult(testResult, 'newTest');
+  } catch (err) {
+    return res.status(409).json({ error: `test with same name and id_sku already exists` });
+  }
+
+  // check also that id_sku exist!!!
+
+  try {
+    await db3.createTestResult(testResult);
+    return res.status(201).end();
+  } catch(err){
+    res.status(500).end();
+  }
+  
+});
+
+app.put('/api/skuitems/:rfid/testResult/:id', async (req, res) => {
+  if (!Number.isInteger(parseInt(req.params.rfid)))
+  res.status(422).json({error : "rfid is not a number"}).end();
+
+  if (!Number.isInteger(parseInt(req.params.id)))
+  res.status(422).json({error : "id is not a number"}).end();
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let testResult = req.body;
+  
+  if (testResult === undefined || testResult.newIdTestDescriptor === undefined || testResult.newDate === undefined || testResult.newResult === undefined ||
+    testResult.newIdTestDescriptor == '' || testResult.newDate == '' || testResult.newResult === '') {
+    return res.status(422).json({ error: `Invalid testResult data` });
+  }
+
+  // check also that id_sku exist!!!
+
+  try{
+    await db3.modifyTestResult(req.params.rfid, req.params.id, testResult);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'not found')
+      //check also issku exist
+      res.status(404).json({error: `wrong id or rfid`})
+    else
+      res.status(503).end()
+  }
+});
+
+app.delete('/api/skuitems/:rfid/testResult/:id', async (req, res) => {
+  if (!Number.isInteger(parseInt(req.params.rfid)))
+  res.status(422).json({error : "rfid is not a number"}).end();
+  
+  if (!Number.isInteger(parseInt(req.params.id)))
+  res.status(422).json({error : "id is not a number"}).end();
+
+  try{
+    await db3.deleteTestResult(req.params.rfid, req.params.id);
+    res.status(204).end();
+  }catch(err){
+    if(err == "not found")
+      res.status(422).json({error: "rfid or id not found"}).end();
+    else
+      res.status(503).end();
+  }
+})
+
+// <----------- CONTROL SKU prime 6 ----------->
+
+app.get('/api/skus', async (req, res) => {
+  try {
+    const skus = await db1.getSkus();
+    res.status(200).json(skus);
+  } catch (err) {
+    console.log(err);
+    res.status(500).end();
+  }
+})
+
+app.get('/api/skus/:id', async (req, res) => {
+
+  if (!Number.isInteger(parseInt(req.params.id)))
+    res.status(422).json({error : "id is not a number"}).end();
+
+  try {
+    const skus = await db1.getSkuById(req.params.id);
+    res.status(200).json(skus);
+  } catch (err) {
+    if (err == "not found")
+      res.status(404).json(err).end();
+    else
+    res.status(500).end();
+  }
+});
+
+app.post('/api/sku', async (req, res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let sku = req.body;
+  
+  if (sku === undefined || sku.description === undefined || sku.weight === undefined || sku.volume === undefined || sku.notes === undefined || sku.price === undefined || sku.availableQuantity === undefined ||
+    sku.description == '' || sku.weight == '' || sku.volume === '' || sku.notes == '' || sku.price == '' || sku.availableQuantity === '') {
+    return res.status(422).json({ error: `Invalid sku data` });
+  }
+
+  try {
+    await db1.newTableSku();
+    await db1.createSku(sku);
+    return res.status(201).end();
+  } catch(err){
+    console.log(err);
+    res.status(500).end();
+  }
+  
+});
+
+app.put('/api/sku/:id', async (req, res) => {
+  if (!Number.isInteger(parseInt(req.params.id)))
+    res.status(422).json({error : "id is not a number"}).end();
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let sku = req.body;
+  
+  if (sku === undefined || sku.newDescription === undefined || sku.newWeight === undefined || sku.newVolume === undefined || sku.newNotes === undefined || sku.newPrice === undefined || sku.newAvailableQuantity === undefined ||
+    sku.newDescription == '' || sku.newWeight == '' || sku.newVolume === '' || sku.newNotes == '' || sku.newPrice == '' || sku.newAvailableQuantity === '') {
+    return res.status(422).json({ error: `Invalid sku data` });
+  }
+
+  try{
+    await db1.modifySku(req.params.id, sku);
+    //modify position occupied fileds
+    res.status(200).end()
+  }catch(err){
+    if(err = 'not found')
+      res.status(404).json({error: `wrong id`})
+    else
+      res.status(503).end()
+  }
+});
+
+app.put('/api/sku/:id/position', async (req, res) => {
+  if (!Number.isInteger(parseInt(req.params.id)))
+  res.status(422).json({error : "id is not a number"}).end();
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+
+  let position = req.body;
+  
+  if (position === undefined || position.position === undefined || position.position == '' ) {
+    return res.status(422).json({ error: `Invalid position data` });
+  }
+
+  try{
+    await db1.modifySkuPositon(req.params.id, position);
+    //modify position occupied fileds
+    res.status(200).end()
+  }catch(err){
+    if(err = 'not found')
+      res.status(404).json({error: `wrong id`})
+    else
+      res.status(503).end()
+  }
+});
+
+app.delete('/api/skus/:id', async (req, res) => {
+  
+  if (!Number.isInteger(parseInt(req.params.id)))
+  res.status(422).json({error : "id is not a number"}).end();
+
+  try{
+    await db1.deleteSku(req.params.id);
+    res.status(204).end();
+  }catch(err){
+    if(err == "not found")
+      res.status(422).json({error: "id not found"}).end();
+    else
+      res.status(503).end();
+  }
+})
 
 
 
