@@ -1,0 +1,166 @@
+// Non Testati: - get restock issued
+//              -
+//              - 
+//              - 
+//              - 
+
+
+// <------------ RESTOCK ORDER ------------>
+
+//GET
+
+GET  http://localhost:3001/api/restockOrders
+
+###
+
+GET  http://localhost:3001/api/restockOrdersIssued
+
+###
+
+GET  http://localhost:3001/api/restockOrders/2
+
+###
+
+GET  http://localhost:3001/api/restockOrders/2/returnItems
+
+###
+
+//POST
+
+POST http://localhost:3001/api/restockOrder
+Content-Type: application/json
+
+{
+    "issueDate":"2020/11/29 09:33",
+    "products": [{"SKUId":15,"description":"a product","price":21.99,"qty":15},
+                {"SKUId":130,"description":"another product","price":11.99,"qty":20}],
+    "supplierId" : 2
+}
+
+###
+
+//PUT 
+
+PUT http://localhost:3001/api/restockOrder/3
+Content-Type: application/json
+
+{
+    "newState":"ISSUED"
+}
+
+###
+
+PUT http://localhost:3001/api/restockOrder/1/skuItems
+Content-Type: application/json
+
+{
+    "skuItems" : [{"SKUId":25,"rfid":"12345678901234567890123456789019"}]
+}
+
+###
+
+PUT http://localhost:3001/api/restockOrder/3/transportNote
+Content-Type: application/json
+
+{
+    "transportNote":{"deliveryDate":"2022/12/29"}
+}
+
+###
+
+// DELETE
+DELETE  http://localhost:3001/api/restockOrder/2
+
+###
+
+// <------------ RETURN ORDER ------------>
+
+//GET
+
+GET  http://localhost:3001/api/returnOrders
+
+###
+
+GET  http://localhost:3001/api/returnOrders/2
+
+###
+
+//POST
+
+POST   http://localhost:3001/api/returnOrder
+Content-Type: application/json
+
+{
+    "returnDate":"2021/11/29 09:33",
+    "products": [{"SKUId":12,"description":"a product","price":10.99,               "RFID":"12345678901234567890123456789016"},
+                {"SKUId":180,"description":"another product","price":11.99,"RFID":"12345678901234567890123456789038"},...],
+    "restockOrderId" : 1
+}
+
+###
+
+//DELETE
+
+DELETE   http://localhost:3001/api/returnOrder/2
+
+###
+
+// <------------ INTERNAL ORDER ------------>
+
+//GET
+
+GET  http://localhost:3001/api/internalOrders
+
+###
+
+GET  http://localhost:3001/api/internalOrdersIssued
+
+###
+
+GET  http://localhost:3001/api/internalOrdersAccepted
+
+###
+
+GET  http://localhost:3001/api/internalOrders/2
+
+###
+
+//POST
+
+POST   http://localhost:3001/api/internalOrders
+Content-Type: application/json
+
+{
+    "issueDate":"2021/11/29 09:33",
+    "products": [{"SKUId":12,"description":"a product","price":10.99,"qty":3},
+                {"SKUId":180,"description":"another product","price":11.99,"qty":3},...],
+    "customerId" : 1
+}
+
+###
+
+//PUT
+
+PUT   http://localhost:3001/api/internalOrders/1
+Content-Type: application/json
+
+{
+    "newState":"ACCEPTED"
+}
+###
+
+PUT   http://localhost:3001/api/internalOrders/1
+Content-Type: application/json
+
+{
+    "newState":"COMPLETED",
+    "products":[{"SkuID":1,"RFID":"12345678901234567890123456789016"},{"SkuID":1,"RFID":"12345678901234567890123456789038"},...]
+}
+
+###
+
+// DELETE
+
+DELETE   http://localhost:3001/api/internalOrders/2
+
+###

@@ -4,8 +4,8 @@ const controlOrder = require('./modules/controlOrder');
 // init express
 const controlUser = require('./modules/controlUser');
 const { json } = require('express');
-const db = new controlUser('EzWh');
-const db2 = new controlOrder('EzWh');
+const db = new controlUser('EzWh.db');
+const db2 = new controlOrder('EzWh.db');
 
 const app = new express();
 const port = 3001;
@@ -23,6 +23,7 @@ app.get('/api/users', async (req, res) => {
     res.status(404).end();
   }
 });
+
 
 // SOLO PER TEST
 app.get('/api/all', async (req, res) => {
@@ -65,7 +66,7 @@ app.post('/api/newUser', async (req, res) => {
   if (Object.keys(req.body).length === 0) {
     return res.status(422).json({ error: `Empty body request` });
   }
-  let user = req.body.user;
+  let user = req.body;
 
 
   if (user === undefined || user.name === undefined || user.surname === undefined || user.username === undefined || user.type === undefined ||
@@ -274,7 +275,7 @@ app.put('/api/users/:username', async (req, res) => {
     return res.status(422).json({ error: `Empty body request` });
   } 
 
-  const rights = req.body.rights;
+  const rights = req.body;
 
   if (rights === undefined || rights.oldType === undefined || rights.newType === undefined || 
       rights.oldType === '' || rights.newType === '') {
@@ -295,6 +296,7 @@ app.put('/api/users/:username', async (req, res) => {
       res.status(503).end()
   }
 })
+
 
 
 // DELETE
@@ -377,7 +379,8 @@ app.get('/api/restockOrders/:id/returnItems', async (req, res) => {
 
   try {
     await db2.getRestockOrder(id);
-    const skuItems = db2.getSkuItemsByRestockOrder(id);
+    const skuItems = await db2.getSkuItemsByRestockOrder(id);
+    console.log(skuItems);
     res.status(200).json(skuItems);
   } catch (err) {
     if (err.error === 'no restock order associated to id') {
@@ -502,7 +505,7 @@ app.delete('/api/restockOrder/:id', (req,res)=>{
     }
 
     db2.deleteRestockOrder(id);
-    res.status(200).end()
+    res.status(204).end()
 
   } catch (err) {
     if(err = 'no restock order associated to id')

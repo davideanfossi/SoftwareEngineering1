@@ -1,0 +1,137 @@
+// <------------ USER ------------>
+
+//GET
+GET  http://localhost:3001/api/userInfo
+
+###
+
+GET  http://localhost:3001/api/suppliers
+
+###
+
+GET http://localhost:3001/api/users
+
+###
+
+// solo per testare DA TOGLIERE IN SEGUITO
+
+GET http://localhost:3001/api/all
+###
+
+//POST
+
+POST http://localhost:3001/api/newUser
+Content-Type: application/json
+
+{
+    "username":"user13@ezwh.com",
+    "name":"Pippo",
+    "surname" : "Forte",
+    "password" : "ciao",
+    "type" : "supplier"
+
+}
+
+###
+
+POST http://localhost:3001/api/managerSessions
+Content-Type: application/json
+
+{
+    "credentials" : {
+
+        "username" : "user1@ezwh.com",
+        "password" : "testpassword" 
+    }
+}
+
+###
+
+POST http://localhost:3001/api/customerSessions
+Content-Type: application/json
+
+{
+    "credentials" : {
+        
+        "username" : "user6@ezwh.com",
+        "password" : "ciao" 
+    }
+}
+
+###
+
+POST http://localhost:3001/api/supplierSessions
+Content-Type: application/json
+
+{
+    "credentials" : {
+        
+        "username" : "user13@ezwh.com",
+        "password" : "ciao" 
+    }
+}
+
+###
+
+POST http://localhost:3001/api/clerkSessions
+Content-Type: application/json
+
+{
+    "credentials" : {
+        
+        "username" : "user7@ezwh.com",
+        "password" : "ciao" 
+    }
+}
+
+###
+
+POST http://localhost:3001/api/qualityEmployeeSessions
+Content-Type: application/json
+
+{
+    "credentials" : {
+        
+        "username" : "user9@ezwh.com",
+        "password" : "ciao" 
+    }
+}
+
+###
+
+POST http://localhost:3001/api/deliveryEmployeeSessions
+Content-Type: application/json
+
+{
+    "credentials" : {
+        
+        "username" : "user11@ezwh.com",
+        "password" : "ciao" 
+    }
+}
+
+###
+
+POST http://localhost:3001/api/logout
+Content-Type: application/json
+
+###
+
+// PUT
+
+PUT  http://localhost:3001/api/users/user8@ezwh.com
+Content-Type: application/json
+
+{
+    "oldType" : "clerk",
+    "newType" : "supplier"
+}
+
+###
+
+// DELETE
+
+DELETE http://localhost:3001/api/users/user13@ezwh.com/supplier
+
+###
+

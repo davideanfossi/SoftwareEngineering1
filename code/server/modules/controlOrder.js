@@ -66,7 +66,7 @@ class controlOrder {
 
     getIssuedRestockOrders() {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT * FROM RESTOCKORDER WHERE STATE = ISSUED`;
+            const sql = `SELECT * FROM RESTOCKORDER WHERE STATE = "ISSUED"`;
 
             this.db.all(sql, [], (err, rows) => {
                 if (err) {
@@ -96,28 +96,30 @@ class controlOrder {
         return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM RESTOCKORDER WHERE ID = ?`;
 
-            this.db.all(sql, [id], (err, r) => {
+            this.db.all(sql, [id], (err, row) => {
                 if (err) {
                     console.log(err);
                     reject(err);
                     return;
                 }
 
-                if (r === undefined) {
+                if (row === undefined) {
                     reject({error: 'no restock order associated to id'});
                 }
-               
+
+                const r = row[0]
+
                 const order = 
                     {
-                        id: r.ID,
                         issueDate: r.ISSUEDATE,
                         state: r.STATE,
                         products: JSON.parse(r.PRODUCTS),
-                        supplierID: r.SUPPLIERID,
-                        transportNote: r.TRANSPORTNOTE,
+                        supplierId: r.SUPPLIERID,
+                        transportNote: JSON.parse(r.TRANSPORTNOTE),
                         skuItems: JSON.parse(r.SKUITEMS)
 
-                    }
+                    } 
+
 
                 resolve(order);
             });
@@ -135,7 +137,7 @@ class controlOrder {
                     return;
                 }
 
-                const skuItems = JSON.parse(row);
+                const skuItems = JSON.parse(row[0].SKUITEMS);
                 resolve(skuItems);
 
             });
@@ -193,10 +195,11 @@ class controlOrder {
                     reject({error: 'no restock order associated to id'});
                     return
                 }
-                if(rows[0].SKUITEMS.length>0){
+
+                if(rows[0].SKUITEMS != null){
                     skus = skus.concat(JSON.parse(rows[0].SKUITEMS));
                 }
-                console.log(skus)
+
                 const sql2 = "UPDATE RESTOCKORDER SET SKUITEMS = ? WHERE ID = ?"
                 this.db.all(sql2, [JSON.stringify(skus), id], (err, rows) => {
                     if (err) {
@@ -206,6 +209,8 @@ class controlOrder {
                     }
                     resolve();
                 });
+
+                resolve();
             });
         });
     }
@@ -225,7 +230,7 @@ class controlOrder {
                 }
                 
                 const sql2 = "UPDATE RESTOCKORDER SET transportNote = ? WHERE ID = ?"
-                this.db.all(sql2, [note, id], (err, rows) => {
+                this.db.all(sql2, [JSON.stringify(note), id], (err, rows) => {
                     if (err) {
                         console.log(err);
                         reject(err);
@@ -251,7 +256,7 @@ class controlOrder {
                     return
                 }
                 
-                const sql2 = "DELETE FROM RESTOCKORDER SET WHERE ID = ?"
+                const sql2 = "DELETE FROM RESTOCKORDER WHERE ID = ?"
                 this.db.all(sql2, [id], (err, rows) => {
                     if (err) {
                         console.log(err);

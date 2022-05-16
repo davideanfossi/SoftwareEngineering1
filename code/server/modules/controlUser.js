@@ -248,9 +248,7 @@ class controlUser {
                     reject(err);
                     return;
                 }
-
-                console.log(rows);
-
+                
                 resolve('done');
             });
 
