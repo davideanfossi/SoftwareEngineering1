@@ -955,6 +955,86 @@ app.get('/api/skus/:id', async (req, res) => {
   }
 });
 
+app.get('/api/skuitems', async (req, res) => {                 
+  try {
+    const SKUItemsList = await db1.getSKUItems();
+    res.status(200).json(SKUItemsList);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/positions', async (req, res) => {               
+  try {
+    const PositionsList = await db1.getPositions();
+    res.status(200).json(PositionsList);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/items', async (req, res) => {               
+  try {
+    const ItemList = await db1.getItems();
+    res.status(200).json(ItemList);
+  } catch (err) {
+    res.status(500).end();
+  }
+});
+
+app.get('/api/skuitems/sku/:id', async (req, res) => {         
+  if (id === undefined || id === '') {
+    return res.status(422).json({ error: `Invalid SKUId` });    // non da invalid SKUId ma not found
+  }
+
+  try {
+    const skuitems = await db1.getSKUItemsAvailable(id);
+    res.status(200).json(skuitems);
+    }catch(err){
+      if(err = 'not found')
+        res.status(404).json({error: `no SKU available associated to id`})
+      else
+        res.status(503).end()
+    }
+});
+
+app.get('/api/skuitems/:rfid', async (req, res) => {      
+  let rfid = req.params.rfid;
+  if (rfid === undefined || rfid === '') {
+    return res.status(422).json({ error: `Invalid RFID` });    // non da invalid SKUId ma not found
+  }
+
+  try {
+    const skuitem = await db1.getSKUItem(rfid);
+    res.status(200).json(skuitem);
+    }catch(err){
+      if(err = 'not found')
+        res.status(404).json({error: `no SKUItem associated to RFID`})
+      else
+        res.status(503).end()
+    }
+});
+
+app.get('/api/items/:id', async (req, res) => {          
+  let id = parseInt(req.params.id);           // mi da gli item nonostante inserisca l'id
+
+  if (id === undefined || id === '' || id === NaN) {
+    return res.status(422).json({ error: `Invalid ID` });    // non da invalid ma not found
+  }
+
+  try {
+    const item = await db1.getItem(id);
+    res.status(200).json(item);
+    }catch(err){
+      if(err = 'not found')
+        res.status(404).json({error: `no item associated to ID`})
+      else
+        res.status(503).end()
+    }
+});
+
+//POST
+
 app.post('/api/sku', async (req, res) => {
   if (Object.keys(req.body).length === 0) {
     return res.status(422).json({ error: `Empty body request` });
@@ -975,6 +1055,70 @@ app.post('/api/sku', async (req, res) => {
     res.status(500).end();
   }
   
+});
+
+app.post('/api/skuitem', async (req, res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let SKUItem = req.body;
+
+  if (SKUItem === undefined || SKUItem.RFID === undefined || SKUItem.SKUId === undefined || SKUItem.DateOfStock === undefined ||
+    SKUItem.RIFD === '' || SKUItem.SKUId === '' || SKUItem.DateOfStock === '') {
+    return res.status(422).json({ error: `Invalid SKUItem data` });  
+
+  }
+  try {
+    await db1.newTableSKUItem();
+    db1.createSKUItem(SKUItem);
+    return res.status(201).end();
+
+  } catch(err){
+    res.status(503).end();
+  }
+});
+
+app.post('/api/position', async (req, res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let position = req.body;
+
+  if (position === undefined || position.positionID === undefined || position.aisleID === undefined || position.row === undefined || position.col === undefined || position.maxWeight === undefined ||
+    position.maxVolume === undefined || position.positionID === '' || position.aisleID === '' || position.row === '' || position.col === '' || position.maxWeight === '' || position.maxVolume === '') {
+    return res.status(422).json({ error: `Invalid position data` });  
+
+  }
+  try {
+    await db1.newTablePosition();
+    db1.createPosition(position);
+    return res.status(201).end();
+
+  } catch(err){
+    res.status(503).end();
+  }
+});
+
+app.post('/api/item', async (req, res) => {
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  }
+  let Item = req.body;
+
+  if (Item === undefined || Item.id === undefined || Item.description === undefined || Item.price === undefined ||
+    Item.SKUId === undefined || Item.supplierId === undefined || Item.id === '' || Item.description === '' || Item.price === ''||
+    Item.SKUId === '' || Item.supplierId === '') {
+    return res.status(422).json({ error: `Invalid Item data` });  
+
+  }
+  try {
+    await db1.newTableItem();
+    db1.createItem(Item);
+    return res.status(201).end();
+
+  } catch(err){
+    res.status(503).end();
+  }
 });
 
 app.put('/api/sku/:id', async (req, res) => {
@@ -1029,6 +1173,99 @@ app.put('/api/sku/:id/position', async (req, res) => {
   }
 });
 
+app.put('/api/skuitems/:rfid', async (req, res) => {
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  } 
+
+  const data = req.body;
+
+  if (data === undefined || data.newRFID === undefined || data.newAvailable === undefined || data.newDateOfStock === undefined ||
+    req.params.rfid === undefined || data.newRFID === '' || data.newAvailable === '' || data.newDateOfStock === '' || req.params.rfid === '') 
+    return res.status(422).json({ error: `Invalid data` });
+
+  try{
+    await db1.modifySKUItem(req.params.rfid, data);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'not found')
+      res.status(404).json({error: `no SKU Item associated to rfid`})
+    else
+      res.status(503).end()
+  }
+})
+
+app.put('/api/position/:positionID', async (req, res) => {
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  } 
+
+  const data = req.body;
+  if (data === undefined || data.newAisleID === undefined || data.newRow === undefined || data.newCol === undefined ||  data.newMaxWeight === undefined ||
+    data.newMaxVolume === undefined || data.newOccupiedWeight === undefined || data.newOccupiedVolume === undefined || req.params.positionID === undefined || 
+    data.newAisleID === '' || data.newRow === '' || data.newCol === '' || data.newMaxWeight === '' || data.newMaxVolume === '' || data.newOccupiedWeight === '' || 
+    data.newOccupiedVolume === '' || req.params.positionID === '') 
+    return res.status(422).json({ error: `Invalid data` });  
+
+  try{
+    await db1.modifyPosition(req.params.positionID, data);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'not found')
+      res.status(404).json({error: `no position associated to positionID`})
+    else
+      res.status(503).end()
+  }
+})
+
+app.put('/api/position/:positionID/changeID', async (req, res) => {
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  } 
+
+  const newPositionID = req.body.newPositionID;
+
+  if (newPositionID === undefined || req.params.positionID === undefined || 
+    newPositionID === '' ||  req.params.positionID === '') 
+    return res.status(422).json({ error: `Invalid data` });   
+
+  try{
+    await db1.modifyPositionID(req.params.positionID, newPositionID);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'not found')
+      res.status(404).json({error: `no position associated to positionID`})
+    else
+      res.status(503).end()
+  }
+})
+
+app.put('/api/item/:id', async (req, res) => {
+
+  if (Object.keys(req.body).length === 0) {
+    return res.status(422).json({ error: `Empty body request` });
+  } 
+
+  const data = req.body;
+  
+  if (data === undefined || data.newDescription === undefined || data.newPrice === undefined || req.params.id === undefined || 
+    data.newDescription === '' || data.newPrice === '' || req.params.id === '') 
+    return res.status(422).json({ error: `Invalid data` });  
+
+  try{
+    await db1.modifyItem(req.params.id, data);
+    res.status(200).end()
+  }catch(err){
+    if(err = 'not found')
+      res.status(404).json({error: `no Item associated to id`})
+    else
+      res.status(503).end()
+  }
+})
+
 app.delete('/api/skus/:id', async (req, res) => {
   
   if (!Number.isInteger(parseInt(req.params.id)))
@@ -1044,6 +1281,72 @@ app.delete('/api/skus/:id', async (req, res) => {
       res.status(503).end();
   }
 })
+
+app.delete('/api/deleteSKUItemTable', (req, res) => {
+  try {
+    db1.dropSKUItemTable();
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).end();
+  }
+})
+
+app.delete('/api/deletePositionTable', (req, res) => {
+  try {
+    db1.dropPositionTable();
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).end();
+  }
+})
+
+app.delete('/api/deleteItemTable', (req, res) => {
+  try {
+    db1.dropItemTable();
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).end();
+  }
+})
+
+app.delete('/api/skuitems/:rfid', async (req, res) => {
+  const rfid = req.params.rfid;
+  if (rfid === undefined || rfid === '' ) 
+    return res.status(422).json({ error: `Invalid data` });
+
+  try{
+    await db1.deleteSKUItem(rfid);
+    res.status(204).end()
+  }catch(err){                                 
+      res.status(503).end()
+  }
+ })
+
+ app.delete('/api/position/:positionID', async (req, res) => {
+  const positionID = req.params.positionID;
+  if (positionID === undefined || positionID === '' ) 
+    return res.status(422).json({ error: `Invalid data` });
+
+  try{
+    await db1.deletePosition(positionID);
+    res.status(204).end()
+  }catch(err){                                 
+      res.status(503).end()
+  }
+ })
+
+ app.delete('/api/items/:id', async (req, res) => {
+  const id = req.params.id;
+  if (id === undefined || id === '' ) 
+    return res.status(422).json({ error: `Invalid data` });
+
+  try{
+    await db1.deleteItem(id);
+    res.status(204).end()
+  }catch(err){                                 
+      res.status(503).end()
+  }
+ })
 
 
 
