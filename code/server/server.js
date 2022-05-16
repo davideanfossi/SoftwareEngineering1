@@ -550,8 +550,8 @@ app.post('/api/returnOrder', async (req,res) => {
   }
   let body = req.body;
 
-  if (body === undefined || body.issueDate === undefined || body.products === undefined || body.supplierId === undefined) {
-    console.log(body)
+  if (body === undefined || body.returnDate === undefined || body.products === undefined || body.restockOrderId === undefined) {
+    //console.log(body)
     return res.status(422).json({ error: `Invalid body data` });
   }
 
@@ -574,7 +574,7 @@ app.delete('/api/returnOrder/:id', (req,res)=>{
       return res.status(422).json({ error: `Invalid params` });
     }
     db2.deleteReturnOrder(id);
-    res.status(200).end()
+    res.status(204).end()
   } catch (err) {
     if(err = 'no return order associated to id')
     res.status(404).json({error: `wrong id or order doesn't exist`})
@@ -614,7 +614,7 @@ app.get('/api/internalOrdersAccepted', async (req, res) => {
   }
 });
 
-app.get('/api/returnOrders/:id', async (req, res) => {
+app.get('/api/internalOrders/:id', async (req, res) => {
 
   const id = req.params.id;
 
@@ -644,7 +644,7 @@ app.post('/api/internalOrders', async (req,res) => {
 
   try {
     await db2.newTableInternalOrder();
-    db2.newInternalOrder(body);
+    await db2.newInternalOrder(body);
     return res.status(201).end();
   } catch(err){
     console.log(err)
@@ -663,7 +663,7 @@ app.put('/api/internalOrders/:id', async (req,res) => {
   if (body === undefined || body.newState === undefined) {
     return res.status(422).json({ error: `Invalid body data` });
   }
-
+  console.log(body);
   let id = req.params.id;
 
   if(id === undefined || id<=0){
@@ -673,12 +673,12 @@ app.put('/api/internalOrders/:id', async (req,res) => {
   try{
     let products = []
     if(body.products!==undefined){
-      products = JSON.parse(body.products)
+      products = body.products
     }
     db2.modifyInternalOrder(id, body.newState, products);
     res.status(200).end()
   }catch(err){
-    if(err = 'no internal order associated to id')
+    if(err == 'no internal order associated to id')
       res.status(404).json({error: `wrong id or order doesn't exist`})
     else
       res.status(503).end()
@@ -695,7 +695,7 @@ app.delete('/api/internalOrders/:id', (req,res)=>{
     }
 
     db2.deleteInternalOrder(id);
-    res.status(200).end()
+    res.status(204).end()
 
   } catch (err) {
     if(err = 'no internal order associated to id')
@@ -704,6 +704,9 @@ app.delete('/api/internalOrders/:id', (req,res)=>{
     res.status(503).end()
   }
 });
+
+
+
 
 // <------------------ ITEM ------------------->
 

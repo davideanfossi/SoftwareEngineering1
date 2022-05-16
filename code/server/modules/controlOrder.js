@@ -10,6 +10,7 @@ class controlOrder {
 
     }
 
+
     dropTable() {
         return new Promise((resolve, reject) => {
             const sql = 'DROP TABLE IF EXISTS RESTOCKORDER';
@@ -46,7 +47,7 @@ class controlOrder {
                     reject(err);
                     return;
                 }
-               
+
                 const orders = rows.map((r) => (
                     {
                         id: r.ID,
@@ -74,7 +75,7 @@ class controlOrder {
                     reject(err);
                     return;
                 }
-               
+
                 const orders = rows.map((r) => (
                     {
                         id: r.ID,
@@ -104,21 +105,21 @@ class controlOrder {
                 }
 
                 if (row === undefined) {
-                    reject({error: 'no restock order associated to id'});
+                    reject({ error: 'no restock order associated to id' });
                 }
 
                 const r = row[0]
 
-                const order = 
-                    {
-                        issueDate: r.ISSUEDATE,
-                        state: r.STATE,
-                        products: JSON.parse(r.PRODUCTS),
-                        supplierId: r.SUPPLIERID,
-                        transportNote: JSON.parse(r.TRANSPORTNOTE),
-                        skuItems: JSON.parse(r.SKUITEMS)
+                const order =
+                {
+                    issueDate: r.ISSUEDATE,
+                    state: r.STATE,
+                    products: JSON.parse(r.PRODUCTS),
+                    supplierId: r.SUPPLIERID,
+                    transportNote: JSON.parse(r.TRANSPORTNOTE),
+                    skuItems: JSON.parse(r.SKUITEMS)
 
-                    } 
+                }
 
 
                 resolve(order);
@@ -144,7 +145,7 @@ class controlOrder {
         });
     }
 
-    newRestockOrder(data){
+    newRestockOrder(data) {
         return new Promise((resolve, reject) => {
             const sql = 'INSERT INTO RESTOCKORDER(ISSUEDATE, PRODUCTS, SUPPLIERID) VALUES(?, ?, ?)';
             this.db.run(sql, [data.issueDate, JSON.stringify(data.products), data.supplierId], (err) => {
@@ -157,7 +158,7 @@ class controlOrder {
         });
     }
 
-    modifyRestockOrderState(id, state){
+    modifyRestockOrderState(id, state) {
         return new Promise((resolve, reject) => {
             const sql1 = "SELECT * FROM RESTOCKORDER WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
@@ -167,7 +168,7 @@ class controlOrder {
                     return;
                 }
                 if (rows.length < 1)
-                    reject({error: 'no restock order associated to id'});
+                    reject({ error: 'no restock order associated to id' });
             });
             const sql2 = "UPDATE RESTOCKORDER SET STATE = ? WHERE ID = ?"
             this.db.all(sql2, [state, id], (err, rows) => {
@@ -182,7 +183,7 @@ class controlOrder {
         });
     }
 
-    modifyRestockOrderSKUs(id, skus){
+    modifyRestockOrderSKUs(id, skus) {
         return new Promise((resolve, reject) => {
             const sql1 = "SELECT ID, SKUITEMS FROM RESTOCKORDER WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
@@ -191,12 +192,12 @@ class controlOrder {
                     reject(err);
                     return;
                 }
-                if (rows.length < 1){
-                    reject({error: 'no restock order associated to id'});
+                if (rows.length < 1) {
+                    reject({ error: 'no restock order associated to id' });
                     return
                 }
 
-                if(rows[0].SKUITEMS != null){
+                if (rows[0].SKUITEMS != null) {
                     skus = skus.concat(JSON.parse(rows[0].SKUITEMS));
                 }
 
@@ -215,7 +216,7 @@ class controlOrder {
         });
     }
 
-    modifyRestockOrderNote(id, note){
+    modifyRestockOrderNote(id, note) {
         return new Promise((resolve, reject) => {
             const sql1 = "SELECT ID FROM RESTOCKORDER WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
@@ -224,11 +225,11 @@ class controlOrder {
                     reject(err);
                     return;
                 }
-                if (rows.length < 1){
-                    reject({error: 'no restock order associated to id'});
+                if (rows.length < 1) {
+                    reject({ error: 'no restock order associated to id' });
                     return
                 }
-                
+
                 const sql2 = "UPDATE RESTOCKORDER SET transportNote = ? WHERE ID = ?"
                 this.db.all(sql2, [JSON.stringify(note), id], (err, rows) => {
                     if (err) {
@@ -242,7 +243,7 @@ class controlOrder {
         });
     }
 
-    deleteRestockOrder(id){
+    deleteRestockOrder(id) {
         return new Promise((resolve, reject) => {
             const sql1 = "SELECT ID FROM RESTOCKORDER WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
@@ -251,11 +252,11 @@ class controlOrder {
                     reject(err);
                     return;
                 }
-                if (rows.length < 1){
-                    reject({error: 'no restock order associated to id'});
+                if (rows.length < 1) {
+                    reject({ error: 'no restock order associated to id' });
                     return
                 }
-                
+
                 const sql2 = "DELETE FROM RESTOCKORDER WHERE ID = ?"
                 this.db.all(sql2, [id], (err, rows) => {
                     if (err) {
@@ -295,7 +296,7 @@ class controlOrder {
             });
         });
     }
-    
+
     getReturnOrders() {
         return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM RETURNORDER`;
@@ -306,7 +307,7 @@ class controlOrder {
                     reject(err);
                     return;
                 }
-               
+
                 const orders = rows.map((r) => (
                     {
                         id: r.ID,
@@ -323,30 +324,31 @@ class controlOrder {
     getReturnOrder(id) {
         return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM RETURNORDER WHERE ID = ?`;
-            this.db.all(sql, [id], (err, r) => {
+            this.db.all(sql, [id], (err, row) => {
                 if (err) {
                     console.log(err);
                     reject(err);
                     return;
                 }
+                const r = row[0];
                 if (r === undefined) {
-                    reject({error: 'no return order associated to id'});
+                    reject({ error: 'no return order associated to id' });
                 }
-                const order = 
+                const order =
                 {
                     id: r.ID,
                     returnDate: r.ISSUEDATE,
                     products: JSON.parse(r.PRODUCTS),
-                    restockOrderId: r.SUPPLIERID,
+                    restockOrderId: r.RESTOCKORDERID,
                 }
                 resolve(order);
             });
         });
     }
 
-    newReturnOrder(data){
+    newReturnOrder(data) {
         return new Promise((resolve, reject) => {
-            const sql = 'INSERT INTO RETURNORDER(RETURNDATE, PRODUCTSS, RESTOCKORDERID) VALUES(?, ?, ?)';
+            const sql = 'INSERT INTO RETURNORDER(RETURNDATE, PRODUCTS, RESTOCKORDERID) VALUES(?, ?, ?)';
             this.db.run(sql, [data.returnDate, JSON.stringify(data.products), data.restockOrderId], (err) => {
                 if (err) {
                     reject(err);
@@ -357,7 +359,7 @@ class controlOrder {
         });
     }
 
-    deleteReturnOrder(id){
+    deleteReturnOrder(id) {
         return new Promise((resolve, reject) => {
             const sql1 = "SELECT ID FROM RETURNORDER WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
@@ -366,11 +368,11 @@ class controlOrder {
                     reject(err);
                     return;
                 }
-                if (rows.length < 1){
-                    reject({error: 'no return order associated to id'});
+                if (rows.length < 1) {
+                    reject({ error: 'no return order associated to id' });
                     return
                 }
-                
+
                 const sql2 = "DELETE FROM RETURNORDER SET WHERE ID = ?"
                 this.db.all(sql2, [id], (err, rows) => {
                     if (err) {
@@ -384,161 +386,170 @@ class controlOrder {
         });
     }
 
-// <------------------------INTERNAL ORDER---------------------->
+    // <------------------------INTERNAL ORDER---------------------->
 
-dropTableInternalOrder() {
-    return new Promise((resolve, reject) => {
-        const sql = 'DROP TABLE IF EXISTS INTERNALORDER';
-        this.db.run(sql, (err) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve(this.lastID);
+    dropTableInternalOrder() {
+        return new Promise((resolve, reject) => {
+            const sql = 'DROP TABLE IF EXISTS INTERNALORDER';
+            this.db.run(sql, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(this.lastID);
+            });
         });
-    });
-}
+    }
 
-newTableInternalOrder() {
-    return new Promise((resolve, reject) => {
-        const sql = "CREATE TABLE IF NOT EXISTS INTERNALORDER(ID INTEGER PRIMARY KEY AUTOINCREMENT,ISSUEDATE TIMESTAMP ,STATE VARCHAR CHECK(STATE IN ('ISSUED', 'ACCEPTER', 'REFUSED', 'CANCELED', 'COMPLETED')), PRODUCTS TEXT, CUSTOMERID INTEGER)";
-        this.db.run(sql, (err) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve(this.lastID);
+
+    newTableInternalOrder() {
+        return new Promise((resolve, reject) => {
+            const sql = "CREATE TABLE IF NOT EXISTS INTERNALORDER(ID INTEGER PRIMARY KEY AUTOINCREMENT,ISSUEDATE TIMESTAMP ,STATE VARCHAR CHECK(STATE IN ('ISSUED', 'ACCEPTED', 'REFUSED', 'CANCELED', 'COMPLETED')), PRODUCTS TEXT, CUSTOMERID INTEGER)";
+            this.db.run(sql, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(this.lastID);
+            });
         });
-    });
-}
+    }
 
-// GET
+    // GET
 
-getInternalOrders() {
-    return new Promise((resolve, reject) => {
-        const sql = `SELECT * FROM INTERNALORDER`;
-        this.db.all(sql, [], (err, rows) => {
-            if (err) {
-                console.log(err);
-                reject(err);
-                return;
-            }
-            const orders = rows.map((r) => (
+    getInternalOrders() {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM INTERNALORDER`;
+            this.db.all(sql, [], (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                const orders = rows.map((r) => (
+                    {
+                        id: r.ID,
+                        issueDate: r.ISSUEDATE,
+                        state: r.STATE,
+                        products: JSON.parse(r.PRODUCTS),
+                        supplierID: r.CUSTOMERID
+                    }
+                ));
+                resolve(orders);
+            });
+        });
+    }
+
+    getInternalOrdersIssued() {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM INTERNALORDER WHERE STATE = 'ISSUED'`;
+            this.db.all(sql, [], (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                const orders = rows.map((r) => (
+                    {
+                        id: r.ID,
+                        issueDate: r.ISSUEDATE,
+                        state: r.STATE,
+                        products: JSON.parse(r.PRODUCTS),
+                        supplierID: r.CUSTOMERID
+                    }
+                ));
+                resolve(orders);
+            });
+        });
+    }
+
+    getInternalOrdersAccepted() {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM INTERNALORDER WHERE STATE = 'ACCEPTED'`;
+            this.db.all(sql, [], (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                const orders = rows.map((r) => (
+                    {
+                        id: r.ID,
+                        issueDate: r.ISSUEDATE,
+                        state: r.STATE,
+                        products: JSON.parse(r.PRODUCTS),
+                        supplierID: r.CUSTOMERID
+                    }
+                ));
+                resolve(orders);
+            });
+        });
+    }
+
+    getInternalOrder(id) {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM INTERNALORDER WHERE ID = ?`;
+            this.db.all(sql, [id], (err, row) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                const r = row[0]
+                if (r === undefined) {
+                    reject({ error: 'no internal order associated to id' });
+                }
+                const order =
                 {
                     id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
+                    returnDate: r.ISSUEDATE,
                     products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.CUSTOMERID
+                    restockOrderId: r.CUSTOMERID,
                 }
-            ));
-            resolve(orders);
+                resolve(order);
+            });
         });
-    });
-}
+    }
 
-getInternalOrdersIssued() {
-    return new Promise((resolve, reject) => {
-        const sql = `SELECT * FROM INTERNALORDER WHERE STATE = 'ISSUED'`;
-        this.db.all(sql, [], (err, rows) => {
-            if (err) {
-                console.log(err);
-                reject(err);
-                return;
-            }
-            const orders = rows.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.CUSTOMERID
+    // POST 
+
+    newInternalOrder(data) {
+        return new Promise((resolve, reject) => {
+            const sql = 'INSERT INTO INTERNALORDER(ISSUEDATE, PRODUCTS, STATE, CUSTOMERID) VALUES(?, ?, "ISSUED", ?)';
+            this.db.run(sql, [data.issueDate, JSON.stringify(data.products), data.customerId], (err) => {
+                if (err) {
+                    reject(err);
+                    return;
                 }
-            ));
-            resolve(orders);
+                resolve();
+            });
         });
-    });
-}
+    }
 
-getInternalOrdersAccepted() {
-    return new Promise((resolve, reject) => {
-        const sql = `SELECT * FROM INTERNALORDER WHERE STATE = 'ACCEPTED'`;
-        this.db.all(sql, [], (err, rows) => {
-            if (err) {
-                console.log(err);
-                reject(err);
-                return;
-            }
-            const orders = rows.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.CUSTOMERID
+    // PUT
+
+    modifyInternalOrder(id, state, products) {
+        return new Promise((resolve, reject) => {
+            const sql1 = "SELECT * FROM INTERNALORDER WHERE ID = ?"
+            this.db.all(sql1, [id], (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
                 }
-            ));
-            resolve(orders);
-        });
-    });
-}
+                console.log(rows);
+                
+                if (rows.length < 1) {
+                    reject({ error: 'no internal order associated to id' });
+                }else{
+                    products = products.concat(JSON.parse(rows[0].PRODUCTS));
+                }
+            });
 
-getInternalOrder(id) {
-    return new Promise((resolve, reject) => {
-        const sql = `SELECT * FROM INTERNALORDER WHERE ID = ?`;
-        this.db.all(sql, [id], (err, r) => {
-            if (err) {
-                console.log(err);
-                reject(err);
-                return;
-            }
-            if (r === undefined) {
-                reject({error: 'no internal order associated to id'});
-            }
-            const order = 
-            {
-                id: r.ID,
-                returnDate: r.ISSUEDATE,
-                products: JSON.parse(r.PRODUCTS),
-                restockOrderId: r.CUSTOMERID,
-            }
-            resolve(order);
-        });
-    });
-}
+            
 
-// POST 
-
-newInternalOrder(data){
-    return new Promise((resolve, reject) => {
-        const sql = 'INSERT INTO INTERNALORDER(ISSUEDATE, PRODUCTS, CUSTOMERID) VALUES(?, ?, ?)';
-        this.db.run(sql, [data.issueDate, JSON.stringify(data.products), data.customerId], (err) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve();
-        });
-    });
-}
-
-// PUT
-
-modifyInternalOrder(id, state, products){
-    return new Promise((resolve, reject) => {
-        const sql1 = "SELECT * FROM INTERNALORDER WHERE ID = ?"
-        this.db.all(sql1, [id], (err, rows) => {
-            if (err) {
-                console.log(err);
-                reject(err);
-                return;
-            }
-            if (rows.length < 1){
-                reject({error: 'no internal order associated to id'});
-            }
-            products = products.concat(JSON.parse(rows[0].PRODUCTS));
             const sql2 = "UPDATE INTERNALORDER SET STATE = ?, products = ? WHERE ID = ?"
-            this.db.all(sql2, [state, products, id], (err, rows) => {
+            this.db.all(sql2, [state, JSON.stringify(products), id], (err, rows) => {
                 if (err) {
                     console.log(err);
                     reject(err);
@@ -547,39 +558,37 @@ modifyInternalOrder(id, state, products){
                 console.log(rows);
                 resolve();
             });
-            
         });
-    });
-}
+    }
 
-// DELETE
+    // DELETE
 
-deleteInternalOrder(id){
-    return new Promise((resolve, reject) => {
-        const sql1 = "SELECT ID FROM INTERNALORDER WHERE ID = ?"
-        this.db.all(sql1, [id], (err, rows) => {
-            if (err) {
-                console.log(err);
-                reject(err);
-                return;
-            }
-            if (rows.length < 1){
-                reject({error: 'no internal order associated to id'});
-                return
-            }
-            
-            const sql2 = "DELETE FROM INTERNALORDER SET WHERE ID = ?"
-            this.db.all(sql2, [id], (err, rows) => {
+    deleteInternalOrder(id) {
+        return new Promise((resolve, reject) => {
+            const sql1 = "SELECT ID FROM INTERNALORDER WHERE ID = ?"
+            this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
                     console.log(err);
                     reject(err);
                     return;
                 }
-                resolve();
+                if (rows.length < 1) {
+                    reject({ error: 'no internal order associated to id' });
+                    return
+                }
+
+                const sql2 = "DELETE FROM INTERNALORDER WHERE ID = ?"
+                this.db.all(sql2, [id], (err, rows) => {
+                    if (err) {
+                        console.log(err);
+                        reject(err);
+                        return;
+                    }
+                    resolve();
+                });
             });
         });
-    });
-}
+    }
 
 }
 

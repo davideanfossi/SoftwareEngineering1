@@ -1,4 +1,4 @@
-// Non Testati: - get restock issued
+// Non Testati: - 
 //              -
 //              - 
 //              - 
@@ -81,7 +81,7 @@ GET  http://localhost:3001/api/returnOrders
 
 ###
 
-GET  http://localhost:3001/api/returnOrders/2
+GET  http://localhost:3001/api/returnOrders/1
 
 ###
 
@@ -91,9 +91,9 @@ POST   http://localhost:3001/api/returnOrder
 Content-Type: application/json
 
 {
-    "returnDate":"2021/11/29 09:33",
-    "products": [{"SKUId":12,"description":"a product","price":10.99,               "RFID":"12345678901234567890123456789016"},
-                {"SKUId":180,"description":"another product","price":11.99,"RFID":"12345678901234567890123456789038"},...],
+    "returnDate":"2022/11/19 10:30",
+    "products": [{"SKUId":15,"description":"a product","price":25.99,"RFID":"12345678901234567890123456789018"},
+                {"SKUId":34,"description":"another product","price":38.99,"RFID":"12345678901234567890123456789039"}],
     "restockOrderId" : 1
 }
 
@@ -121,7 +121,7 @@ GET  http://localhost:3001/api/internalOrdersAccepted
 
 ###
 
-GET  http://localhost:3001/api/internalOrders/2
+GET  http://localhost:3001/api/internalOrders/3
 
 ###
 
@@ -131,9 +131,9 @@ POST   http://localhost:3001/api/internalOrders
 Content-Type: application/json
 
 {
-    "issueDate":"2021/11/29 09:33",
-    "products": [{"SKUId":12,"description":"a product","price":10.99,"qty":3},
-                {"SKUId":180,"description":"another product","price":11.99,"qty":3},...],
+    "issueDate":"2019/11/29 16:33",
+    "products": [{"SKUId":100,"description":"a product","price":10.99,"qty":3},
+                {"SKUId":103,"description":"another product","price":11.99,"qty":3}],
     "customerId" : 1
 }
 
@@ -149,18 +149,20 @@ Content-Type: application/json
 }
 ###
 
-PUT   http://localhost:3001/api/internalOrders/1
+PUT   http://localhost:3001/api/internalOrders/2
 Content-Type: application/json
 
 {
     "newState":"COMPLETED",
-    "products":[{"SkuID":1,"RFID":"12345678901234567890123456789016"},{"SkuID":1,"RFID":"12345678901234567890123456789038"},...]
+    "products":[{"SkuID":1,"RFID":"12345678901234567890123456789016"},{"SkuID":70,"RFID":"12345678901234567890123456789038"}]
 }
 
 ###
 
 // DELETE
 
-DELETE   http://localhost:3001/api/internalOrders/2
+DELETE   http://localhost:3001/api/internalOrders/1
 
 ###
+
+
