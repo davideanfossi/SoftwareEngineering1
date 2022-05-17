@@ -1066,8 +1066,24 @@ app.post('/api/skuitem', async (req, res) => {
   if (SKUItem === undefined || SKUItem.RFID === undefined || SKUItem.SKUId === undefined || SKUItem.DateOfStock === undefined ||
     SKUItem.RIFD === '' || SKUItem.SKUId === '' || SKUItem.DateOfStock === '') {
     return res.status(422).json({ error: `Invalid SKUItem data` });  
-
   }
+  if (SKUItem.DateOfStock != null){
+    const isDate = (date) => {
+      return (new Date(date) !== "Invalid Date") && !isNaN(new Date(date));
+    }
+    if (isDate(SKUItem.DateOfStock) === true){
+      if (SKUItem.DateOfStock.match(/[0-9]{4}[/](0[1-9]|1[0-2])[/](0[1-9]|[1-2][0-9]|3[0-1])/) === null) {
+        //it is not a date with format YYYY/MM/DD
+        if (SKUItem.DateOfStock.match(/[0-9]{4}[/](0[1-9]|1[0-2])[/](0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/) === null) {
+          //it is not a date with format YYYY/MM/DD HH:MM
+          return res.status(422).json({ error: `invalid DateOfStock format` }); 
+        }
+      }
+    }
+    else
+      return res.status(422).json({ error: `newDateOfStock is not a date` }); 
+  }
+
   try {
     await db1.newTableSKUItem();
     db1.createSKUItem(SKUItem);
@@ -1184,6 +1200,23 @@ app.put('/api/skuitems/:rfid', async (req, res) => {
   if (data === undefined || data.newRFID === undefined || data.newAvailable === undefined || data.newDateOfStock === undefined ||
     req.params.rfid === undefined || data.newRFID === '' || data.newAvailable === '' || data.newDateOfStock === '' || req.params.rfid === '') 
     return res.status(422).json({ error: `Invalid data` });
+    if (data.newDateOfStock != null){
+      const isDate = (date) => {
+        return (new Date(date) !== "Invalid Date") && !isNaN(new Date(date));
+      }
+      if (isDate(data.newDateOfStock) === true){
+        if (data.newDateOfStock.match(/[0-9]{4}[/](0[1-9]|1[0-2])[/](0[1-9]|[1-2][0-9]|3[0-1])/) === null) {
+          //it is not a date with format YYYY/MM/DD
+          if (data.newDateOfStock.match(/[0-9]{4}[/](0[1-9]|1[0-2])[/](0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/) === null) {
+            //it is not a date with format YYYY/MM/DD HH:MM
+            return res.status(422).json({ error: `invalid newDateOfStock format` }); 
+          }
+        }
+      }
+      else
+        return res.status(422).json({ error: `newDateOfStock is not a date` }); 
+    }
+      
 
   try{
     await db1.modifySKUItem(req.params.rfid, data);
