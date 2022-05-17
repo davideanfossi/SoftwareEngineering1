@@ -38,6 +38,7 @@ app.get('/api/all', async (req, res) => {
   }
 });
 
+/*
 app.get('/api/userinfo', async (req, res) => {
   let id = parseInt(req.query.id);
 
@@ -51,7 +52,7 @@ app.get('/api/userinfo', async (req, res) => {
   } catch (err) {
     res.status(500).end();
   }
-});
+});*/
 
 app.get('/api/suppliers', async (req, res) => {
   try {
@@ -71,13 +72,14 @@ app.post('/api/newUser', async (req, res) => {
   }
   let user = req.body;
 
-
   if (user === undefined || user.name === undefined || user.surname === undefined || user.username === undefined || user.type === undefined ||
-    user.name == '' || user.surname == '' || user.username === '' || user.type === '') {
+    user.name === '' || user.surname === '' || user.username === '' || user.type === '' || user.password === '' || user.password === undefined) {
     return res.status(422).json({ error: `Invalid user data` });
 
   } else if (user.type === 'manager') {
     return res.status(422).json({ error: `validation of request body failed or attempt to create manager or administrator accounts` });
+  } else if (user.password.length < 8){
+    return res.status(422).json({error: 'la password deve essere almeno di 8 caratteri'})
   }
 
   try {
@@ -92,7 +94,7 @@ app.post('/api/newUser', async (req, res) => {
     return res.status(201).end();
 
   } catch(err){
-    res.status(500).end();
+    return res.status(503).end();
   }
 });
 
@@ -290,7 +292,12 @@ app.put('/api/users/:username', async (req, res) => {
   }
 
   try{
-    db.modifyUserRights(req.params.username, rights);
+    const data = {
+      username: req.params.username,
+      type: rights.oldType
+    }
+    await db.checkUser(data,'')
+    await db.modifyUserRights(req.params.username, rights);
     res.status(200).end()
   }catch(err){
     if(err = 'not found')
@@ -370,7 +377,7 @@ app.get('/api/restockOrders/:id', async (req, res) => {
     res.status(200).json(order);
   } catch (err) {
     if (err.error === 'no restock order associated to id') {
-      res.status(404).json(error);
+      res.status(404).json(err);
     }
     res.status(500).end();
   }
@@ -387,7 +394,7 @@ app.get('/api/restockOrders/:id/returnItems', async (req, res) => {
     res.status(200).json(skuItems);
   } catch (err) {
     if (err.error === 'no restock order associated to id') {
-      res.status(404).json(error);
+      res.status(404).json(err);
     }
     res.status(500).end();
   }
@@ -408,7 +415,7 @@ app.post('/api/restockOrder', async (req,res) => {
 
   try {
     await db2.newTableRestockOrder();
-    db2.newRestockOrder(body);
+    await db2.newRestockOrder(body);
     return res.status(201).end();
   } catch(err){
     console.log(err)
@@ -435,7 +442,7 @@ app.put('/api/restockOrder/:id', async (req,res) => {
   }
 
   try{
-    db2.modifyRestockOrderState(id, body.newState);
+    await db2.modifyRestockOrderState(id, body.newState);
     res.status(200).end()
   }catch(err){
     if(err = 'no restock order associated to id')
@@ -462,7 +469,7 @@ app.put('/api/restockOrder/:id/skuItems', async (req,res) => {
   }
 
   try{
-    db2.modifyRestockOrderSKUs(id, body.skuItems);
+    await db2.modifyRestockOrderSKUs(id, body.skuItems);
     res.status(200).end()
   }catch(err){
     console.log(err)
@@ -490,7 +497,7 @@ app.put('/api/restockOrder/:id/transportNote', async (req,res) => {
   }
 
   try{
-    db2.modifyRestockOrderNote(id, body.transportNote);
+    await db2.modifyRestockOrderNote(id, body.transportNote);
     res.status(200).end()
   }catch(err){
     if(err = 'no restock order associated to id')
@@ -560,7 +567,7 @@ app.post('/api/returnOrder', async (req,res) => {
 
   try {
     await db2.newTableReturnOrder();
-    db2.newReturnOrder(body);
+    await db2.newReturnOrder(body);
     return res.status(201).end();
   } catch(err){
     console.log(err)
@@ -678,7 +685,7 @@ app.put('/api/internalOrders/:id', async (req,res) => {
     if(body.products!==undefined){
       products = body.products
     }
-    db2.modifyInternalOrder(id, body.newState, products);
+    await db2.modifyInternalOrder(id, body.newState, products);
     res.status(200).end()
   }catch(err){
     if(err == 'no internal order associated to id')
@@ -753,7 +760,7 @@ app.post('/api/testDescriptor', async (req, res) => {
   try {
     await db3.newTableTestDescriptor();
     // is check name id_sku combo good??
-    // await db3.checkTestDescriptor(testDescriptor, 'newTest');
+    await db3.checkTestDescriptor(testDescriptor, 'newTest');
   } catch (err) {
     return res.status(409).json({ error: `test with same name and id_sku already exists` });
   }
@@ -761,11 +768,11 @@ app.post('/api/testDescriptor', async (req, res) => {
   // check also that id_sku exist!!!
 
   try {
-    db3.createTestDescriptor(testDescriptor);
+    await db3.createTestDescriptor(testDescriptor);
     return res.status(201).end();
 
   } catch(err){
-    res.status(500).end();
+    res.status(500).json({err}).end();
   }
   
 });
@@ -873,7 +880,7 @@ app.post('/api/skuitems/testResult', async (req, res) => {
     await db3.createTestResult(testResult);
     return res.status(201).end();
   } catch(err){
-    res.status(500).end();
+    res.status(500).json({err}).end();
   }
   
 });
@@ -1086,7 +1093,7 @@ app.post('/api/skuitem', async (req, res) => {
 
   try {
     await db1.newTableSKUItem();
-    db1.createSKUItem(SKUItem);
+    await db1.createSKUItem(SKUItem);
     return res.status(201).end();
 
   } catch(err){
@@ -1107,7 +1114,7 @@ app.post('/api/position', async (req, res) => {
   }
   try {
     await db1.newTablePosition();
-    db1.createPosition(position);
+    await db1.createPosition(position);
     return res.status(201).end();
 
   } catch(err){
@@ -1129,7 +1136,7 @@ app.post('/api/item', async (req, res) => {
   }
   try {
     await db1.newTableItem();
-    db1.createItem(Item);
+    await db1.createItem(Item);
     return res.status(201).end();
 
   } catch(err){
@@ -1172,20 +1179,23 @@ app.put('/api/sku/:id/position', async (req, res) => {
   }
 
   let position = req.body;
+  let data;
   
   if (position === undefined || position.position === undefined || position.position == '' ) {
     return res.status(422).json({ error: `Invalid position data` });
   }
 
   try{
+    data = await db1.getWeightVolume(req.params.id);
     await db1.modifySkuPositon(req.params.id, position);
-    //modify position occupied fileds
+    await db1.updateOccupied(data[0], data[1], position, data[2]);
     res.status(200).end()
   }catch(err){
-    if(err = 'not found')
+    if(err == 'not found')
       res.status(404).json({error: `wrong id`})
     else
-      res.status(503).end()
+      console.log(err);
+      res.status(503).json({err}).end()
   }
 });
 

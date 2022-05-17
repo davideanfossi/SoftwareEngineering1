@@ -7,12 +7,27 @@ class controlSku {
             if (err) throw err;
         });
 
+        const sql = `PRAGMA foreign_keys=on;`;
+        this.db.run(sql, (err) => {
+            if (err) {
+                throw err;
+            }
+        });
     }
 
     newTableSku() {
         return new Promise((resolve, reject) => {
-            const sql = `CREATE TABLE IF NOT EXISTS SKU(ID INTEGER PRIMARY KEY AUTOINCREMENT, DESCRIPTION VARCHAR, WHEGHT INT,
-                VOLUME INT, NOTES VARCHAR, POSITION VARCHAR, AVAILABLE_QUANTITY INT, PRICE INT, TEST_DESCRIPTORS INT[])`;
+            const sql = `CREATE TABLE IF NOT EXISTS SKU(
+                ID INTEGER PRIMARY KEY AUTOINCREMENT, 
+                DESCRIPTION VARCHAR, 
+                WEIGHT INT,
+                VOLUME INT, 
+                NOTES VARCHAR, 
+                POSITION TEXT, 
+                AVAILABLE_QUANTITY INT, 
+                PRICE INT,
+                CONSTRAINT fk_position FOREIGN KEY (POSITION) REFERENCES POSITION(POSITIONID)
+                )`;
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
@@ -64,11 +79,32 @@ class controlSku {
 
     getSkus() {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT * FROM SKU`;
+            let skus;
+            const sql = `SELECT ID FROM SKU`;
 
             this.db.all(sql, [], (err, rows) => {
-                if (err) {
-                    console.log(err);
+                if (err) {           
+                    reject(err);
+                    return;
+                }
+                
+                rows.forEach(r => {
+                    const sku = this.getSkuById(r.ID);
+                    skus.push(sku);
+                })
+                resolve(skus);
+            });
+        });
+    }
+
+    /*
+    getSkus() {
+        return new Promise((resolve, reject) => {
+            const sql = `SELECT * FROM SKU`;
+            const sql1 = `SELECT * FROM SKU, TEST_DESCRIPTOR AD TD WHERE SKU.ID = TD.ID_SKU`;
+
+            this.db.all(sql, [], (err, rows) => {
+                if (err) {           
                     reject(err);
                     return;
                 }
@@ -81,13 +117,14 @@ class controlSku {
                         position : r.POSITION,
                         availableQuantity : r.AVAILABLE_QUANTITY,
                         price : r.PRICE,
-                        testDescriptors : r.TEST_DESCRIPTORS
+                        testDescriptors : "EFV"
                      }
                 ));
                 resolve(sku);
             });
         });
     }
+    */
 
     getSkuById(id) {
         return new Promise((resolve, reject) => {
@@ -95,7 +132,6 @@ class controlSku {
 
             this.db.all(sql, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -122,7 +158,7 @@ class controlSku {
 
     createSku(sku) {
         return new Promise((resolve, reject) => {
-            const sql = 'INSERT INTO SKU(DESCRIPTION, WHEGHT, VOLUME, NOTES, AVAILABLE_QUANTITY, PRICE) VALUES(?, ?, ?, ?, ?, ?)';
+            const sql = 'INSERT INTO SKU(DESCRIPTION, WEIGHT, VOLUME, NOTES, AVAILABLE_QUANTITY, PRICE) VALUES(?, ?, ?, ?, ?, ?)';
             this.db.run(sql, [sku.description, sku.weight, sku.volume, sku.notes, sku.availableQuantity, sku.price], (err) => {
                 if (err) {
                     reject(err);
@@ -139,7 +175,6 @@ class controlSku {
 
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -148,12 +183,11 @@ class controlSku {
                     reject('not found');             
             });
 
-            const sql2 = "UPDATE SKU SET DESCRIPTION = ?, WHEGHT = ?, VOLUME = ?, NOTES = ?, AVAILABLE_QUANTITY = ?, PRICE = ? WHERE ID = ?"
+            const sql2 = "UPDATE SKU SET DESCRIPTION = ?, WEIGHT = ?, VOLUME = ?, NOTES = ?, AVAILABLE_QUANTITY = ?, PRICE = ? WHERE ID = ?"
 
             this.db.all(sql2, [sku.newDescription, sku.newWeight, sku.newVolume, sku.newNotes, sku.newAvailableQuantity, sku.newPrice, id], (err, rows) => {
 
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -162,32 +196,62 @@ class controlSku {
             });
         });
     }
+
+    getWeightVolume(id) {
+        return new Promise((resolve, reject) => {
+            let weight;
+            let volume;
+            let oldPosition
+        
+            const sql = "SELECT WEIGHT, AVAILABLE_QUANTITY, POSITION FROM SKU WHERE ID = ?"
+            this.db.all(sql, [id], (err, rows) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+        
+                if (rows.length < 1)
+                    reject('not found');  
+                else{
+                    weight = rows[0].WEIGHT;
+                    volume = rows[0].AVAILABLE_QUANTITY;
+                    oldPosition = rows[0].POSITION;
+                    resolve([weight, volume, oldPosition]);
+                }     
+            });
+        });
+    }
     
     modifySkuPositon(id, position) {
         return new Promise((resolve, reject) => {
-            const sql1 = "SELECT * FROM SKU WHERE ID = ?"
-
-            this.db.all(sql1, [id], (err, rows) => {
+            const sql1 = "UPDATE SKU SET POSITION = ? WHERE ID = ?"
+            this.db.all(sql1, [position.position, id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
+                resolve('done');
+            });
+        });
+    }
 
-                if (rows.length < 1)
-                    reject('not found');             
+    updateOccupied(weight, volume, position, oldPosition) {
+        return new Promise((resolve, reject) => {
+            const sql1 = "UPDATE POSITION SET OCCUPIEDWEIGHT = OCCUPIEDWEIGHT + ?, OCCUPIEDVOLUME = OCCUPIEDVOLUME + ? WHERE POSITIONID = ?"
+            this.db.all(sql1, [weight, volume, position.position], (err, rows) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve('done');
             });
 
-            const sql2 = "UPDATE SKU SET POSITION = ? WHERE ID = ?"
-
-            this.db.all(sql2, [position.position, id], (err, rows) => {
-
+            const sql2 = "UPDATE POSITION SET OCCUPIEDWEIGHT = OCCUPIEDWEIGHT - ?, OCCUPIEDVOLUME = OCCUPIEDVOLUME - ? WHERE POSITIONID = ?"
+            this.db.all(sql2, [weight, volume, oldPosition], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
-
                 resolve('done');
             });
         });
@@ -200,7 +264,6 @@ class controlSku {
 
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
