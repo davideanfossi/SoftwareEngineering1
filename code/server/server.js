@@ -869,9 +869,10 @@ app.post('/api/skuitems/testResult', async (req, res) => {
   try {
     await db3.newTableTestResults();
     // is check name id_sku combo good??
+    await db3.checkRfid(testResult.rfid);
     await db3.checkTestResult(testResult, 'newTest');
   } catch (err) {
-    return res.status(409).json({ error: `test with same name and id_sku already exists` });
+    return res.status(404).json({ error: `no sku item associated to rfid or no test descriptor associated to idTestDescriptor` });
   }
 
   // check also that id_sku exist!!!

@@ -301,6 +301,25 @@ class controlTest {
         });
     }
 
+    checkRfid(rfid) {
+        return new Promise((resolve, reject) => {
+            const sql = "SELECT * FROM SKUITEM WHERE RIFD = ?"
+            this.db.all(sql, [rfid], (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+
+                if (rows.length > 0)
+                    resolve('done');
+                else
+                    reject('not found');
+                
+            })
+        });
+    }
+
     modifyTestResult(rfid, id, data) {
         return new Promise((resolve, reject) => {
             const sql1 = "SELECT * FROM TEST_DESCRIPTOR AS TD, TEST_RESULT AS TR WHERE TD.ID = TR.ID_TEST_DESCRIPTOR AND TD.ID_SKU = ? AND TR.ID = ?";
