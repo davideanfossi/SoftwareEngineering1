@@ -25,10 +25,10 @@ Content-Type: application/json
 
 {
     "username":"user13@ezwh.com",
-    "name":"Pippo",
-    "surname" : "Forte",
-    "password" : "ciao",
-    "type" : "supplier"
+    "name":"Franco",
+    "surname" : "Amato",
+    "password" : "ciao1234",
+    "type" : "customer"
 
 }
 
@@ -40,7 +40,7 @@ Content-Type: application/json
 {
     "credentials" : {
 
-        "username" : "user1@ezwh.com",
+        "username" : "user2@ezwh.com",
         "password" : "testpassword" 
     }
 }
@@ -53,7 +53,7 @@ Content-Type: application/json
 {
     "credentials" : {
         
-        "username" : "user6@ezwh.com",
+        "username" : "user7@ezwh.com",
         "password" : "ciao" 
     }
 }
@@ -79,7 +79,7 @@ Content-Type: application/json
 {
     "credentials" : {
         
-        "username" : "user7@ezwh.com",
+        "username" : "user9@ezwh.com",
         "password" : "ciao" 
     }
 }
@@ -119,19 +119,19 @@ Content-Type: application/json
 
 // PUT
 
-PUT  http://localhost:3001/api/users/user8@ezwh.com
+PUT  http://localhost:3001/api/users/user9@ezwh.com
 Content-Type: application/json
 
 {
-    "oldType" : "clerk",
-    "newType" : "supplier"
+    "oldType" : "qualityEmployee",
+    "newType" : "clerk"
 }
 
 ###
 
 // DELETE
 
-DELETE http://localhost:3001/api/users/user13@ezwh.com/supplier
+DELETE http://localhost:3001/api/users/user11@ezwh.com/clerk
 
 ###
 

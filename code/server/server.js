@@ -38,6 +38,7 @@ app.get('/api/all', async (req, res) => {
   }
 });
 
+/*
 app.get('/api/userinfo', async (req, res) => {
   let id = parseInt(req.query.id);
 
@@ -51,7 +52,7 @@ app.get('/api/userinfo', async (req, res) => {
   } catch (err) {
     res.status(500).end();
   }
-});
+});*/
 
 app.get('/api/suppliers', async (req, res) => {
   try {
@@ -71,13 +72,14 @@ app.post('/api/newUser', async (req, res) => {
   }
   let user = req.body;
 
-
   if (user === undefined || user.name === undefined || user.surname === undefined || user.username === undefined || user.type === undefined ||
-    user.name == '' || user.surname == '' || user.username === '' || user.type === '') {
+    user.name === '' || user.surname === '' || user.username === '' || user.type === '' || user.password === '' || user.password === undefined) {
     return res.status(422).json({ error: `Invalid user data` });
 
   } else if (user.type === 'manager') {
     return res.status(422).json({ error: `validation of request body failed or attempt to create manager or administrator accounts` });
+  } else if (user.password.length < 8){
+    return res.status(422).json({error: 'la password deve essere almeno di 8 caratteri'})
   }
 
   try {
@@ -92,7 +94,7 @@ app.post('/api/newUser', async (req, res) => {
     return res.status(201).end();
 
   } catch(err){
-    res.status(500).end();
+    return res.status(503).end();
   }
 });
 
@@ -290,6 +292,11 @@ app.put('/api/users/:username', async (req, res) => {
   }
 
   try{
+    const data = {
+      username: req.params.username,
+      type: rights.oldType
+    }
+    await db.checkUser(data,'')
     db.modifyUserRights(req.params.username, rights);
     res.status(200).end()
   }catch(err){
@@ -370,7 +377,7 @@ app.get('/api/restockOrders/:id', async (req, res) => {
     res.status(200).json(order);
   } catch (err) {
     if (err.error === 'no restock order associated to id') {
-      res.status(404).json(error);
+      res.status(404).json(err);
     }
     res.status(500).end();
   }
@@ -387,7 +394,7 @@ app.get('/api/restockOrders/:id/returnItems', async (req, res) => {
     res.status(200).json(skuItems);
   } catch (err) {
     if (err.error === 'no restock order associated to id') {
-      res.status(404).json(error);
+      res.status(404).json(err);
     }
     res.status(500).end();
   }
