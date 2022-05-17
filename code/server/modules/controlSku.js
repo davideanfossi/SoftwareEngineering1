@@ -173,30 +173,62 @@ class controlSku {
             });
         });
     }
+
+    getWeightVolume(id) {
+        return new Promise((resolve, reject) => {
+            let weight;
+            let volume;
+            let oldPosition
+        
+            const sql = "SELECT WEIGHT, AVAILABLE_QUANTITY, POSITION FROM SKU WHERE ID = ?"
+            this.db.all(sql, [id], (err, rows) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+        
+                if (rows.length < 1)
+                    reject('not found');  
+                else{
+                    weight = rows[0].WEIGHT;
+                    volume = rows[0].AVAILABLE_QUANTITY;
+                    oldPosition = rows[0].POSITION;
+                    resolve([weight, volume, oldPosition]);
+                }     
+            });
+        });
+    }
     
     modifySkuPositon(id, position) {
         return new Promise((resolve, reject) => {
-            const sql1 = "SELECT * FROM SKU WHERE ID = ?"
-
-            this.db.all(sql1, [id], (err, rows) => {
+            const sql1 = "UPDATE SKU SET POSITION = ? WHERE ID = ?"
+            this.db.all(sql1, [position.position, id], (err, rows) => {
                 if (err) {
                     reject(err);
                     return;
                 }
+                resolve('done');
+            });
+        });
+    }
 
-                if (rows.length < 1)
-                    reject('not found');             
+    updateOccupied(weight, volume, position, oldPosition) {
+        return new Promise((resolve, reject) => {
+            const sql1 = "UPDATE POSITION SET OCCUPIEDWEIGHT = OCCUPIEDWEIGHT + ?, OCCUPIEDVOLUME = OCCUPIEDVOLUME + ? WHERE POSITIONID = ?"
+            this.db.all(sql1, [weight, volume, position.position], (err, rows) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve('done');
             });
 
-            const sql2 = "UPDATE SKU SET POSITION = ? WHERE ID = ?"
-
-            this.db.all(sql2, [position.position, id], (err, rows) => {
-
+            const sql2 = "UPDATE POSITION SET OCCUPIEDWEIGHT = OCCUPIEDWEIGHT - ?, OCCUPIEDVOLUME = OCCUPIEDVOLUME - ? WHERE POSITIONID = ?"
+            this.db.all(sql2, [weight, volume, oldPosition], (err, rows) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-
                 resolve('done');
             });
         });

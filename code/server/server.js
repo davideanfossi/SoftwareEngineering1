@@ -297,7 +297,7 @@ app.put('/api/users/:username', async (req, res) => {
       type: rights.oldType
     }
     await db.checkUser(data,'')
-    db.modifyUserRights(req.params.username, rights);
+    await db.modifyUserRights(req.params.username, rights);
     res.status(200).end()
   }catch(err){
     if(err = 'not found')
@@ -313,7 +313,7 @@ app.put('/api/users/:username', async (req, res) => {
 
 app.delete('/api/deleteTable', (req, res) => {
   try {
-    db.dropTable();
+    await db.dropTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
@@ -415,7 +415,7 @@ app.post('/api/restockOrder', async (req,res) => {
 
   try {
     await db2.newTableRestockOrder();
-    db2.newRestockOrder(body);
+    await db2.newRestockOrder(body);
     return res.status(201).end();
   } catch(err){
     console.log(err)
@@ -442,7 +442,7 @@ app.put('/api/restockOrder/:id', async (req,res) => {
   }
 
   try{
-    db2.modifyRestockOrderState(id, body.newState);
+    await db2.modifyRestockOrderState(id, body.newState);
     res.status(200).end()
   }catch(err){
     if(err = 'no restock order associated to id')
@@ -469,7 +469,7 @@ app.put('/api/restockOrder/:id/skuItems', async (req,res) => {
   }
 
   try{
-    db2.modifyRestockOrderSKUs(id, body.skuItems);
+    await db2.modifyRestockOrderSKUs(id, body.skuItems);
     res.status(200).end()
   }catch(err){
     console.log(err)
@@ -497,7 +497,7 @@ app.put('/api/restockOrder/:id/transportNote', async (req,res) => {
   }
 
   try{
-    db2.modifyRestockOrderNote(id, body.transportNote);
+    await db2.modifyRestockOrderNote(id, body.transportNote);
     res.status(200).end()
   }catch(err){
     if(err = 'no restock order associated to id')
@@ -514,7 +514,7 @@ app.delete('/api/restockOrder/:id', (req,res)=>{
       return res.status(422).json({ error: `Invalid params` });
     }
 
-    db2.deleteRestockOrder(id);
+    await db2.deleteRestockOrder(id);
     res.status(204).end()
 
   } catch (err) {
@@ -567,7 +567,7 @@ app.post('/api/returnOrder', async (req,res) => {
 
   try {
     await db2.newTableReturnOrder();
-    db2.newReturnOrder(body);
+    await db2.newReturnOrder(body);
     return res.status(201).end();
   } catch(err){
     console.log(err)
@@ -583,7 +583,7 @@ app.delete('/api/returnOrder/:id', (req,res)=>{
     if(id === undefined || id<=0){
       return res.status(422).json({ error: `Invalid params` });
     }
-    db2.deleteReturnOrder(id);
+    await db2.deleteReturnOrder(id);
     res.status(204).end()
   } catch (err) {
     if(err = 'no return order associated to id')
@@ -685,7 +685,7 @@ app.put('/api/internalOrders/:id', async (req,res) => {
     if(body.products!==undefined){
       products = body.products
     }
-    db2.modifyInternalOrder(id, body.newState, products);
+    await db2.modifyInternalOrder(id, body.newState, products);
     res.status(200).end()
   }catch(err){
     if(err == 'no internal order associated to id')
@@ -704,7 +704,7 @@ app.delete('/api/internalOrders/:id', (req,res)=>{
       return res.status(422).json({ error: `Invalid params` });
     }
 
-    db2.deleteInternalOrder(id);
+    await db2.deleteInternalOrder(id);
     res.status(204).end()
 
   } catch (err) {
@@ -1077,7 +1077,7 @@ app.post('/api/skuitem', async (req, res) => {
   }
   try {
     await db1.newTableSKUItem();
-    db1.createSKUItem(SKUItem);
+    await db1.createSKUItem(SKUItem);
     return res.status(201).end();
 
   } catch(err){
@@ -1120,7 +1120,7 @@ app.post('/api/item', async (req, res) => {
   }
   try {
     await db1.newTableItem();
-    db1.createItem(Item);
+    await db1.createItem(Item);
     return res.status(201).end();
 
   } catch(err){
@@ -1163,19 +1163,22 @@ app.put('/api/sku/:id/position', async (req, res) => {
   }
 
   let position = req.body;
+  let data;
   
   if (position === undefined || position.position === undefined || position.position == '' ) {
     return res.status(422).json({ error: `Invalid position data` });
   }
 
   try{
+    data = await db1.getWeightVolume(req.params.id);
     await db1.modifySkuPositon(req.params.id, position);
-    //modify position occupied fileds
+    await db1.updateOccupied(data[0], data[1], position, data[2]);
     res.status(200).end()
   }catch(err){
     if(err == 'not found')
       res.status(404).json({error: `wrong id`})
     else
+      console.log(err);
       res.status(503).json({err}).end()
   }
 });
@@ -1291,7 +1294,7 @@ app.delete('/api/skus/:id', async (req, res) => {
 
 app.delete('/api/deleteSKUItemTable', (req, res) => {
   try {
-    db1.dropSKUItemTable();
+    await db1.dropSKUItemTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
@@ -1300,7 +1303,7 @@ app.delete('/api/deleteSKUItemTable', (req, res) => {
 
 app.delete('/api/deletePositionTable', (req, res) => {
   try {
-    db1.dropPositionTable();
+    await db1.dropPositionTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
@@ -1309,7 +1312,7 @@ app.delete('/api/deletePositionTable', (req, res) => {
 
 app.delete('/api/deleteItemTable', (req, res) => {
   try {
-    db1.dropItemTable();
+    await db1.dropItemTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
