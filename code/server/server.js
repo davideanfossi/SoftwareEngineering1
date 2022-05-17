@@ -938,7 +938,12 @@ app.delete('/api/skuitems/:rfid/testResult/:id', async (req, res) => {
 
 app.get('/api/skus', async (req, res) => {
   try {
-    const skus = await db1.getSkus();
+    let skus = [];
+    const ids = await db1.getSkuIds();
+    for(const id of ids){
+      const sku = await db1.getSkuById(id);
+      skus.push(sku[0]);
+    }
     res.status(200).json(skus);
   } catch (err) {
     console.log(err);

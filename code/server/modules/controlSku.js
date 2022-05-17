@@ -77,9 +77,9 @@ class controlSku {
         });
     }
 
-    getSkus() {
+    getSkuIds() {
         return new Promise((resolve, reject) => {
-            let skus;
+            let ids = [];
             const sql = `SELECT ID FROM SKU`;
 
             this.db.all(sql, [], (err, rows) => {
@@ -88,47 +88,16 @@ class controlSku {
                     return;
                 }
                 
-                rows.forEach(r => {
-                    const sku = this.getSkuById(r.ID);
-                    skus.push(sku);
-                })
-                resolve(skus);
+                rows.forEach(r => ids.push(r.ID));
+                
+                resolve(ids);
             });
         });
     }
-
-    /*
-    getSkus() {
-        return new Promise((resolve, reject) => {
-            const sql = `SELECT * FROM SKU`;
-            const sql1 = `SELECT * FROM SKU, TEST_DESCRIPTOR AD TD WHERE SKU.ID = TD.ID_SKU`;
-
-            this.db.all(sql, [], (err, rows) => {
-                if (err) {           
-                    reject(err);
-                    return;
-                }
-                const sku = rows.map((r) => (
-                    {
-                        description : r.DESCRIPTION,
-                        weight : r.WEIGHT,
-                        volume : r.VOLUME,
-                        notes : r.NOTES,
-                        position : r.POSITION,
-                        availableQuantity : r.AVAILABLE_QUANTITY,
-                        price : r.PRICE,
-                        testDescriptors : "EFV"
-                     }
-                ));
-                resolve(sku);
-            });
-        });
-    }
-    */
 
     getSkuById(id) {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT * FROM SKU WHERE ID = ?`;
+            const sql = `SELECT * FROM SKU, TEST_DESCRIPTOR AS TD WHERE SKU.ID = TD.ID_SKU AND SKU.ID = ?`;
 
             this.db.all(sql, [id], (err, rows) => {
                 if (err) {
@@ -139,7 +108,11 @@ class controlSku {
                 if (rows.length == 0)
                     reject("not found");
 
-                const sku = rows.map((r) => (
+                let testDescriptors = [];
+                rows.forEach(r => testDescriptors.push(r.ID));
+
+                let a = [rows[0]];
+                const sku = a.map((r) => (
                     {
                         description : r.DESCRIPTION,
                         weight : r.WEIGHT,
@@ -148,7 +121,7 @@ class controlSku {
                         position : r.POSITION,
                         availableQuantity : r.AVAILABLE_QUANTITY,
                         price : r.PRICE,
-                        testDescriptors : r.TEST_DESCRIPTORS
+                        testDescriptors : testDescriptors
                      }
                 ));
                 resolve(sku);
