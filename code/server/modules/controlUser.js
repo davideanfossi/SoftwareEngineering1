@@ -239,9 +239,9 @@ class controlUser {
                     reject('not found');
             });
 
-            const sql2 = "UPDATE USER SET TYPE = ? WHERE USERNAME = ?"
+            const sql2 = "UPDATE USER SET TYPE = ? WHERE USERNAME = ? AND TYPE = ?"
 
-            this.db.all(sql2, [rights.newType, username], (err, rows) => {
+            this.db.all(sql2, [rights.newType, username, rights.oldType], (err, rows) => {
 
                 if (err) {
                     console.log(err);

@@ -104,25 +104,29 @@ class controlOrder {
                     return;
                 }
 
-                if (row === undefined) {
+                if (row.length < 1) {
+                    
                     reject({ error: 'no restock order associated to id' });
+                }else{
+
+                    const r = row[0];
+
+                    const order =
+                    {
+                        issueDate: r.ISSUEDATE,
+                        state: r.STATE,
+                        products: JSON.parse(r.PRODUCTS),
+                        supplierId: r.SUPPLIERID,
+                        transportNote: JSON.parse(r.TRANSPORTNOTE),
+                        skuItems: JSON.parse(r.SKUITEMS)
+
+                    }
+
+
+                    resolve(order);
                 }
 
-                const r = row[0]
-
-                const order =
-                {
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierId: r.SUPPLIERID,
-                    transportNote: JSON.parse(r.TRANSPORTNOTE),
-                    skuItems: JSON.parse(r.SKUITEMS)
-
-                }
-
-
-                resolve(order);
+                
             });
         });
     }
