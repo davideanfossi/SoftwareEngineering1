@@ -753,7 +753,7 @@ app.post('/api/testDescriptor', async (req, res) => {
   try {
     await db3.newTableTestDescriptor();
     // is check name id_sku combo good??
-    // await db3.checkTestDescriptor(testDescriptor, 'newTest');
+    await db3.checkTestDescriptor(testDescriptor, 'newTest');
   } catch (err) {
     return res.status(409).json({ error: `test with same name and id_sku already exists` });
   }
@@ -761,11 +761,11 @@ app.post('/api/testDescriptor', async (req, res) => {
   // check also that id_sku exist!!!
 
   try {
-    db3.createTestDescriptor(testDescriptor);
+    await db3.createTestDescriptor(testDescriptor);
     return res.status(201).end();
 
   } catch(err){
-    res.status(500).end();
+    res.status(500).json({err}).end();
   }
   
 });
@@ -873,7 +873,7 @@ app.post('/api/skuitems/testResult', async (req, res) => {
     await db3.createTestResult(testResult);
     return res.status(201).end();
   } catch(err){
-    res.status(500).end();
+    res.status(500).json({err}).end();
   }
   
 });
@@ -1091,7 +1091,7 @@ app.post('/api/position', async (req, res) => {
   }
   try {
     await db1.newTablePosition();
-    db1.createPosition(position);
+    await db1.createPosition(position);
     return res.status(201).end();
 
   } catch(err){
@@ -1166,10 +1166,10 @@ app.put('/api/sku/:id/position', async (req, res) => {
     //modify position occupied fileds
     res.status(200).end()
   }catch(err){
-    if(err = 'not found')
+    if(err == 'not found')
       res.status(404).json({error: `wrong id`})
     else
-      res.status(503).end()
+      res.status(503).json({err}).end()
   }
 });
 

@@ -7,13 +7,25 @@ class controlTest {
             if (err) throw err;
         });
 
+        const sql = `PRAGMA foreign_keys=on;`;
+        this.db.run(sql, (err) => {
+            if (err) {
+                throw err;
+            }
+        });
     }
 
     // TEST DESCRIPTORS
 
     newTableTestDescriptor() {
         return new Promise((resolve, reject) => {
-            const sql = "CREATE TABLE IF NOT EXISTS TEST_DESCRIPTOR(ID INTEGER PRIMARY KEY AUTOINCREMENT, NAME VARCHAR, PROCEDURE_DESCRIPTION VARCHAR, ID_SKU INT)";
+            const sql = `CREATE TABLE IF NOT EXISTS TEST_DESCRIPTOR(
+                ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                NAME VARCHAR, 
+                PROCEDURE_DESCRIPTION VARCHAR,
+                ID_SKU INT,
+                CONSTRAINT fk_sku FOREIGN KEY (ID_SKU) REFERENCES SKU(ID)
+                );`;
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
@@ -191,9 +203,16 @@ class controlTest {
 
     newTableTestResults() {
         return new Promise((resolve, reject) => {
-            const sql = "CREATE TABLE IF NOT EXISTS TEST_RESULT(ID INTEGER PRIMARY KEY AUTOINCREMENT, ID_TEST_DESCRIPTOR INT, DATE DATE, RESULT BOOLEAN)";
+            const sql = `CREATE TABLE IF NOT EXISTS TEST_RESULT(
+                            ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                            ID_TEST_DESCRIPTOR INT,
+                            DATE DATE,
+                            RESULT BOOLEAN,
+                            CONSTRAINT fk_test_descriptor FOREIGN KEY (ID_TEST_DESCRIPTOR) REFERENCES TEST_DESCRIPTOR(ID)
+                        );`;
             this.db.run(sql, (err) => {
                 if (err) {
+                    console.log("2");
                     reject(err);
                     return;
                 }
@@ -267,8 +286,9 @@ class controlTest {
                 }
 
                 if (typeOfCheck === 'newTest') {
-                    if (rows.length > 0)
+                    if (rows.length > 0){
                         reject(false);
+                    }
                     else
                         resolve(true);
                 }else{

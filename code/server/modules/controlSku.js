@@ -7,12 +7,27 @@ class controlSku {
             if (err) throw err;
         });
 
+        const sql = `PRAGMA foreign_keys=on;`;
+        this.db.run(sql, (err) => {
+            if (err) {
+                throw err;
+            }
+        });
     }
 
     newTableSku() {
         return new Promise((resolve, reject) => {
-            const sql = `CREATE TABLE IF NOT EXISTS SKU(ID INTEGER PRIMARY KEY AUTOINCREMENT, DESCRIPTION VARCHAR, WHEGHT INT,
-                VOLUME INT, NOTES VARCHAR, POSITION VARCHAR, AVAILABLE_QUANTITY INT, PRICE INT, TEST_DESCRIPTORS INT[])`;
+            const sql = `CREATE TABLE IF NOT EXISTS SKU(
+                ID INTEGER PRIMARY KEY AUTOINCREMENT, 
+                DESCRIPTION VARCHAR, 
+                WEIGHT INT,
+                VOLUME INT, 
+                NOTES VARCHAR, 
+                POSITION TEXT, 
+                AVAILABLE_QUANTITY INT, 
+                PRICE INT,
+                CONSTRAINT fk_position FOREIGN KEY (POSITION) REFERENCES POSITION(POSITIONID)
+                )`;
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
@@ -67,8 +82,7 @@ class controlSku {
             const sql = `SELECT * FROM SKU`;
 
             this.db.all(sql, [], (err, rows) => {
-                if (err) {
-                    console.log(err);
+                if (err) {           
                     reject(err);
                     return;
                 }
@@ -95,7 +109,6 @@ class controlSku {
 
             this.db.all(sql, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -122,7 +135,7 @@ class controlSku {
 
     createSku(sku) {
         return new Promise((resolve, reject) => {
-            const sql = 'INSERT INTO SKU(DESCRIPTION, WHEGHT, VOLUME, NOTES, AVAILABLE_QUANTITY, PRICE) VALUES(?, ?, ?, ?, ?, ?)';
+            const sql = 'INSERT INTO SKU(DESCRIPTION, WEIGHT, VOLUME, NOTES, AVAILABLE_QUANTITY, PRICE) VALUES(?, ?, ?, ?, ?, ?)';
             this.db.run(sql, [sku.description, sku.weight, sku.volume, sku.notes, sku.availableQuantity, sku.price], (err) => {
                 if (err) {
                     reject(err);
@@ -139,7 +152,6 @@ class controlSku {
 
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -148,12 +160,11 @@ class controlSku {
                     reject('not found');             
             });
 
-            const sql2 = "UPDATE SKU SET DESCRIPTION = ?, WHEGHT = ?, VOLUME = ?, NOTES = ?, AVAILABLE_QUANTITY = ?, PRICE = ? WHERE ID = ?"
+            const sql2 = "UPDATE SKU SET DESCRIPTION = ?, WEIGHT = ?, VOLUME = ?, NOTES = ?, AVAILABLE_QUANTITY = ?, PRICE = ? WHERE ID = ?"
 
             this.db.all(sql2, [sku.newDescription, sku.newWeight, sku.newVolume, sku.newNotes, sku.newAvailableQuantity, sku.newPrice, id], (err, rows) => {
 
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -169,7 +180,6 @@ class controlSku {
 
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -183,7 +193,6 @@ class controlSku {
             this.db.all(sql2, [position.position, id], (err, rows) => {
 
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -200,7 +209,6 @@ class controlSku {
 
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
