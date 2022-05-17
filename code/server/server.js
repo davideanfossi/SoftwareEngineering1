@@ -313,7 +313,7 @@ app.put('/api/users/:username', async (req, res) => {
 
 app.delete('/api/deleteTable', (req, res) => {
   try {
-    await db.dropTable();
+    db.dropTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
@@ -514,7 +514,7 @@ app.delete('/api/restockOrder/:id', (req,res)=>{
       return res.status(422).json({ error: `Invalid params` });
     }
 
-    await db2.deleteRestockOrder(id);
+    db2.deleteRestockOrder(id);
     res.status(204).end()
 
   } catch (err) {
@@ -583,7 +583,7 @@ app.delete('/api/returnOrder/:id', (req,res)=>{
     if(id === undefined || id<=0){
       return res.status(422).json({ error: `Invalid params` });
     }
-    await db2.deleteReturnOrder(id);
+    db2.deleteReturnOrder(id);
     res.status(204).end()
   } catch (err) {
     if(err = 'no return order associated to id')
@@ -704,7 +704,7 @@ app.delete('/api/internalOrders/:id', (req,res)=>{
       return res.status(422).json({ error: `Invalid params` });
     }
 
-    await db2.deleteInternalOrder(id);
+    db2.deleteInternalOrder(id);
     res.status(204).end()
 
   } catch (err) {
@@ -1294,7 +1294,7 @@ app.delete('/api/skus/:id', async (req, res) => {
 
 app.delete('/api/deleteSKUItemTable', (req, res) => {
   try {
-    await db1.dropSKUItemTable();
+    db1.dropSKUItemTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
@@ -1303,7 +1303,7 @@ app.delete('/api/deleteSKUItemTable', (req, res) => {
 
 app.delete('/api/deletePositionTable', (req, res) => {
   try {
-    await db1.dropPositionTable();
+    db1.dropPositionTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
@@ -1312,7 +1312,7 @@ app.delete('/api/deletePositionTable', (req, res) => {
 
 app.delete('/api/deleteItemTable', (req, res) => {
   try {
-    await db1.dropItemTable();
+    db1.dropItemTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();

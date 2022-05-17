@@ -79,7 +79,29 @@ class controlSku {
 
     getSkus() {
         return new Promise((resolve, reject) => {
+            let skus;
+            const sql = `SELECT ID FROM SKU`;
+
+            this.db.all(sql, [], (err, rows) => {
+                if (err) {           
+                    reject(err);
+                    return;
+                }
+                
+                rows.forEach(r => {
+                    const sku = this.getSkuById(r.ID);
+                    skus.push(sku);
+                })
+                resolve(skus);
+            });
+        });
+    }
+
+    /*
+    getSkus() {
+        return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM SKU`;
+            const sql1 = `SELECT * FROM SKU, TEST_DESCRIPTOR AD TD WHERE SKU.ID = TD.ID_SKU`;
 
             this.db.all(sql, [], (err, rows) => {
                 if (err) {           
@@ -95,13 +117,14 @@ class controlSku {
                         position : r.POSITION,
                         availableQuantity : r.AVAILABLE_QUANTITY,
                         price : r.PRICE,
-                        testDescriptors : r.TEST_DESCRIPTORS
+                        testDescriptors : "EFV"
                      }
                 ));
                 resolve(sku);
             });
         });
     }
+    */
 
     getSkuById(id) {
         return new Promise((resolve, reject) => {
