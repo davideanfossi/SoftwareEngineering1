@@ -74,7 +74,7 @@ app.post('/api/newUser', async (req, res) => {
   }
 
   try {
-    db.createUser(user);
+    await db.createUser(user);
     return res.status(201).end();
 
   } catch(err){
@@ -284,7 +284,7 @@ app.put('/api/users/:username', async (req, res) => {
     await db.modifyUserRights(req.params.username, rights);
     res.status(200).end()
   }catch(err){
-    if(err = 'not found')
+    if(err == 'not found')
       res.status(404).json({error: `wrong username or oldType fields or user doesn't exists`})
     else
       res.status(503).end()
@@ -494,14 +494,14 @@ app.put('/api/restockOrder/:id/transportNote', async (req,res) => {
   }
 });
 
-app.delete('/api/restockOrder/:id', (req,res)=>{
+app.delete('/api/restockOrder/:id', async (req,res)=>{
   try {
     let id = req.params.id;
     if(id === undefined || id<=0){
       return res.status(422).json({ error: `Invalid params` });
     }
 
-    db2.deleteRestockOrder(id);
+    await db2.deleteRestockOrder(id);
     res.status(204).end()
 
   } catch (err) {
@@ -564,13 +564,13 @@ app.post('/api/returnOrder', async (req,res) => {
 
 // DELETE
 
-app.delete('/api/returnOrder/:id', (req,res)=>{
+app.delete('/api/returnOrder/:id', async (req,res)=>{
   try {
     let id = req.params.id;
     if(id === undefined || id<=0){
       return res.status(422).json({ error: `Invalid params` });
     }
-    db2.deleteReturnOrder(id);
+    await db2.deleteReturnOrder(id);
     res.status(204).end()
   } catch (err) {
     if(err = 'no return order associated to id')
@@ -684,14 +684,14 @@ app.put('/api/internalOrders/:id', async (req,res) => {
 
 // DELETE
 
-app.delete('/api/internalOrders/:id', (req,res)=>{
+app.delete('/api/internalOrders/:id', async (req,res)=>{
   try {
     let id = req.params.id;
     if(id === undefined || id<=0){
       return res.status(422).json({ error: `Invalid params` });
     }
 
-    db2.deleteInternalOrder(id);
+    await db2.deleteInternalOrder(id);
     res.status(204).end()
 
   } catch (err) {
@@ -1313,27 +1313,27 @@ app.delete('/api/skus/:id', async (req, res) => {
   }
 })
 
-app.delete('/api/deleteSKUItemTable', (req, res) => {
+app.delete('/api/deleteSKUItemTable', async (req, res) => {
   try {
-    db1.dropSKUItemTable();
+    await db1.dropSKUItemTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
   }
 })
 
-app.delete('/api/deletePositionTable', (req, res) => {
+app.delete('/api/deletePositionTable', async (req, res) => {
   try {
-    db1.dropPositionTable();
+    await db1.dropPositionTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();
   }
 })
 
-app.delete('/api/deleteItemTable', (req, res) => {
+app.delete('/api/deleteItemTable',async (req, res) => {
   try {
-    db1.dropItemTable();
+    await db1.dropItemTable();
     res.status(204).end();
   } catch (err) {
     res.status(500).end();

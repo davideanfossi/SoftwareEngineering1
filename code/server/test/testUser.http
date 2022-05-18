@@ -116,8 +116,8 @@ PUT  http://localhost:3001/api/users/user10@ezwh.com
 Content-Type: application/json
 
 {
-    "oldType" : "qualityEmployee",
-    "newType" : "clerk"
+    "oldType" : "clerk",
+    "newType" : "pippo"
 }
 
 ###
