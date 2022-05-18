@@ -868,14 +868,11 @@ app.post('/api/skuitems/testResult', async (req, res) => {
 
   try {
     await db3.newTableTestResults();
-    // is check name id_sku combo good??
     await db3.checkRfid(testResult.rfid);
     await db3.checkTestResult(testResult, 'newTest');
   } catch (err) {
     return res.status(404).json({ error: `no sku item associated to rfid or no test descriptor associated to idTestDescriptor` });
   }
-
-  // check also that id_sku exist!!!
 
   try {
     await db3.createTestResult(testResult);
@@ -903,14 +900,11 @@ app.put('/api/skuitems/:rfid/testResult/:id', async (req, res) => {
     return res.status(422).json({ error: `Invalid testResult data` });
   }
 
-  // check also that id_sku exist!!!
-
   try{
     await db3.modifyTestResult(req.params.rfid, req.params.id, testResult);
     res.status(200).end()
   }catch(err){
     if(err = 'not found')
-      //check also issku exist
       res.status(404).json({error: `wrong id or rfid`})
     else
       res.status(503).end()
@@ -1192,6 +1186,7 @@ app.put('/api/sku/:id/position', async (req, res) => {
   }
 
   try{
+    
     data = await db1.getWeightVolume(req.params.id);
     await db1.modifySkuPositon(req.params.id, position);
     await db1.updateOccupied(data[0], data[1], position, data[2]);

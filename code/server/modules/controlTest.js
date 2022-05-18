@@ -303,7 +303,7 @@ class controlTest {
 
     checkRfid(rfid) {
         return new Promise((resolve, reject) => {
-            const sql = "SELECT * FROM SKUITEM WHERE RIFD = ?"
+            const sql = "SELECT * FROM SKUITEM WHERE RFID = ?"
             this.db.all(sql, [rfid], (err, rows) => {
                 if (err) {
                     console.log(err);
