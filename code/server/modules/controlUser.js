@@ -47,6 +47,7 @@ class controlUser {
             });
         });
     }
+    
 
     createUser(data) {
         return new Promise((resolve, reject) => {
@@ -75,11 +76,10 @@ class controlUser {
                 const users = rows.map((r) => (
                     {
                         id: r.ID,
-                        username: r.USERNAME,
                         name: r.NAME,
                         surname: r.SURNAME,
-                        type: r.TYPE,
-                        psw: r.PASSWORD
+                        email: r.USERNAME,
+                        type: r.TYPE
 
                     }
                 ));
@@ -184,9 +184,9 @@ class controlUser {
                 const info = rows.map((r) => (
                     {
                         id: r.ID,
-                        username: r.USERNAME,
                         name: r.NAME,
-                        surname: r.SURNAME
+                        surname: r.SURNAME,
+                        email: r.USERNAME
                     }
                 ));
 

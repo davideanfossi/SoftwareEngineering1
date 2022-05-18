@@ -1,9 +1,7 @@
 // <------------ USER ------------>
 
+// DA AGGIUSTARE: - se posto un type diverso da quelli consentiti crasha, invece nella put funziona
 //GET
-GET  http://localhost:3001/api/userInfo
-
-###
 
 GET  http://localhost:3001/api/suppliers
 
@@ -24,11 +22,11 @@ POST http://localhost:3001/api/newUser
 Content-Type: application/json
 
 {
-    "username":"user13@ezwh.com",
-    "name":"Franco",
-    "surname" : "Amato",
+    "username":"user14@ezwh.com",
+    "name":"Pippo",
+    "surname" : "Pelle",
     "password" : "ciao1234",
-    "type" : "customer"
+    "type" : "pluto"
 
 }
 
@@ -66,7 +64,7 @@ Content-Type: application/json
 {
     "credentials" : {
         
-        "username" : "user13@ezwh.com",
+        "username" : "user7@ezwh.com",
         "password" : "ciao" 
     }
 }
@@ -112,14 +110,9 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:3001/api/logout
-Content-Type: application/json
-
-###
-
 // PUT
 
-PUT  http://localhost:3001/api/users/user9@ezwh.com
+PUT  http://localhost:3001/api/users/user10@ezwh.com
 Content-Type: application/json
 
 {
@@ -131,7 +124,7 @@ Content-Type: application/json
 
 // DELETE
 
-DELETE http://localhost:3001/api/users/user11@ezwh.com/clerk
+DELETE http://localhost:3001/api/users/user1@ezwh.com/manager
 
 ###
 

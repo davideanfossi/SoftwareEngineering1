@@ -23,7 +23,7 @@ app.get('/api/users', async (req, res) => {
     const userlist = await db.getUsers();
     res.status(200).json(userlist);
   } catch (err) {
-    res.status(404).end();
+    res.status(500).end();
   }
 });
 
@@ -338,7 +338,7 @@ app.delete('/api/users/:username/:type', async (req, res) => {
     res.status(204).end()
   }catch(err){
     if(err === 'not found')
-      res.status(404).json({error: `wrong username or type fields or user doesn't exists`})
+      res.status(422).json({error: `validation of username or of type failed or attempt to delete a manager/administrator`})
     else
       res.status(503).end()
   }
