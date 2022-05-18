@@ -1,16 +1,3 @@
-// 
-
-// DA FARE: - implementare il log-in e il log-out non so come si fa
-//          - implementare l'enum
-
-// FATTI: - getUsers
-//        - createUser
-//        - getUserInfo
-//        - getSuppliers
-//        - allSessions (6)
-//        - modifyUserRught
-//        - deleteUser
-
 class controlUser {
 
     sqlite = require('sqlite3');
