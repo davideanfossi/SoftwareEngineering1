@@ -10,11 +10,11 @@ GET  http://localhost:3001/api/restockOrdersIssued
 
 ###
 
-GET  http://localhost:3001/api/restockOrders/1
+GET  http://localhost:3001/api/restockOrders/4
 
 ###
 
-GET  http://localhost:3001/api/restockOrders/1/returnItems
+GET  http://localhost:3001/api/restockOrders/3/returnItems
 
 ###
 
@@ -24,9 +24,9 @@ POST http://localhost:3001/api/restockOrder
 Content-Type: application/json
 
 {
-    "issueDate":"2020/11/29 09:33",
-    "products": [{"SKUId":15,"description":"a product","price":21.99,"qty":15},
-                {"SKUId":130,"description":"another product","price":11.99,"qty":20}],
+    "issueDate":"2025/11/29 15:33",
+    "products": [{"SKUId":18,"description":"a product","price":21.99,"qty":15},
+                {"SKUId":34,"description":"another product","price":11.99,"qty":20}],
     "supplierId" : 2
 }
 
@@ -38,7 +38,7 @@ PUT http://localhost:3001/api/restockOrder/3
 Content-Type: application/json
 
 {
-    "newState":"ISSUED"
+    "newState":"COMPLETEDRETURN"
 }
 
 ###

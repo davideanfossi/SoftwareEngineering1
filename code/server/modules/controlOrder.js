@@ -55,7 +55,7 @@ class controlOrder {
                         state: r.STATE,
                         products: JSON.parse(r.PRODUCTS),
                         supplierID: r.SUPPLIERID,
-                        transportNote: r.TRANSPORTNOTE,
+                        transportNote: JSON.parse(r.TRANSPORTNOTE),
                         skuItems: JSON.parse(r.SKUITEMS)
 
                     }
@@ -83,7 +83,7 @@ class controlOrder {
                         state: r.STATE,
                         products: JSON.parse(r.PRODUCTS),
                         supplierID: r.SUPPLIERID,
-                        transportNote: r.TRANSPORTNOTE,
+                        transportNote: JSON.parse(r.TRANSPORTNOTE),
                         skuItems: JSON.parse(r.SKUITEMS)
 
                     }

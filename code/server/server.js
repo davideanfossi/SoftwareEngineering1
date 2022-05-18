@@ -38,22 +38,6 @@ app.get('/api/all', async (req, res) => {
   }
 });
 
-/*
-app.get('/api/userinfo', async (req, res) => {
-  let id = parseInt(req.query.id);
-
-  if (id === undefined || id === '') {
-    return res.status(422).json({ error: `Invalid id` });
-  }
-
-  try {
-    const userInfo = await db.getUserInfo(id);
-    res.status(200).json(userInfo);
-  } catch (err) {
-    res.status(500).end();
-  }
-});*/
-
 app.get('/api/suppliers', async (req, res) => {
   try {
     const supplierlist = await db.getSuppliers();
@@ -388,9 +372,12 @@ app.get('/api/restockOrders/:id/returnItems', async (req, res) => {
   const id = req.params.id;
 
   try {
-    await db2.getRestockOrder(id);
+    const restockOrder = await db2.getRestockOrder(id);
+    if(restockOrder.state != 'COMPLETEDRETURN'){
+      res.status(422).json({error: 'validation of id failed or restock order state != COMPLETEDRETURN'});
+    }
     const skuItems = await db2.getSkuItemsByRestockOrder(id);
-    console.log(skuItems);
+    
     res.status(200).json(skuItems);
   } catch (err) {
     if (err.error === 'no restock order associated to id') {
