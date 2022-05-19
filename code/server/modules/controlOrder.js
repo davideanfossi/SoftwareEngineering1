@@ -1,4 +1,5 @@
 const { json } = require('express');
+const dayjs = require('dayjs')
 
 class controlOrder {
     sqlite = require('sqlite3');
@@ -17,7 +18,6 @@ class controlOrder {
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
-                    return;
                 }
                 resolve(this.lastID);
             });
@@ -30,7 +30,6 @@ class controlOrder {
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
-                    return;
                 }
                 resolve(this.lastID);
             });
@@ -45,7 +44,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
 
                 const orders = rows.map((r) => (
@@ -73,9 +71,7 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
-
                 const orders = rows.map((r) => (
                     {
                         id: r.ID,
@@ -85,7 +81,6 @@ class controlOrder {
                         supplierID: r.SUPPLIERID,
                         transportNote: JSON.parse(r.TRANSPORTNOTE),
                         skuItems: JSON.parse(r.SKUITEMS)
-
                     }
                 ));
                 resolve(orders);
@@ -101,7 +96,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
 
                 if (row.length < 1) {
@@ -119,10 +113,7 @@ class controlOrder {
                         supplierId: r.SUPPLIERID,
                         transportNote: JSON.parse(r.TRANSPORTNOTE),
                         skuItems: JSON.parse(r.SKUITEMS)
-
                     }
-
-
                     resolve(order);
                 }
 
@@ -139,7 +130,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
 
                 const skuItems = JSON.parse(row[0].SKUITEMS);
@@ -152,13 +142,17 @@ class controlOrder {
     newRestockOrder(data) {
         return new Promise((resolve, reject) => {
             const sql = 'INSERT INTO RESTOCKORDER(ISSUEDATE, PRODUCTS, SUPPLIERID) VALUES(?, ?, ?)';
-            this.db.run(sql, [data.issueDate, JSON.stringify(data.products), data.supplierId], (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
+            const date = dayjs(data.issueDate).format(' YYYY/MM/DD HH:MM') 
+            if(date=='Invalid Date'){
+                reject({error: "Invalid date!"});
+            }else{
+                this.db.run(sql, [date, JSON.stringify(data.products), data.supplierId], (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve();
+                });
+            }
         });
     }
 
@@ -169,7 +163,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 if (rows.length < 1)
                     reject({ error: 'no restock order associated to id' });
@@ -179,7 +172,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 console.log(rows);
                 resolve();
@@ -194,11 +186,9 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 if (rows.length < 1) {
                     reject({ error: 'no restock order associated to id' });
-                    return
                 }
 
                 if (rows[0].SKUITEMS != null) {
@@ -210,7 +200,6 @@ class controlOrder {
                     if (err) {
                         console.log(err);
                         reject(err);
-                        return;
                     }
                     resolve();
                 });
@@ -227,11 +216,9 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 if (rows.length < 1) {
                     reject({ error: 'no restock order associated to id' });
-                    return
                 }
 
                 const sql2 = "UPDATE RESTOCKORDER SET transportNote = ? WHERE ID = ?"
@@ -239,7 +226,6 @@ class controlOrder {
                     if (err) {
                         console.log(err);
                         reject(err);
-                        return;
                     }
                     resolve();
                 });
@@ -254,11 +240,9 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 if (rows.length < 1) {
                     reject({ error: 'no restock order associated to id' });
-                    return
                 }
 
                 const sql2 = "DELETE FROM RESTOCKORDER WHERE ID = ?"
@@ -266,7 +250,6 @@ class controlOrder {
                     if (err) {
                         console.log(err);
                         reject(err);
-                        return;
                     }
                     resolve();
                 });
@@ -281,7 +264,6 @@ class controlOrder {
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
-                    return;
                 }
                 resolve(this.lastID);
             });
@@ -294,7 +276,6 @@ class controlOrder {
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
-                    return;
                 }
                 resolve(this.lastID);
             });
@@ -309,7 +290,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
 
                 const orders = rows.map((r) => (
@@ -332,7 +312,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 const r = row[0];
                 if (r === undefined) {
@@ -353,13 +332,17 @@ class controlOrder {
     newReturnOrder(data) {
         return new Promise((resolve, reject) => {
             const sql = 'INSERT INTO RETURNORDER(RETURNDATE, PRODUCTS, RESTOCKORDERID) VALUES(?, ?, ?)';
-            this.db.run(sql, [data.returnDate, JSON.stringify(data.products), data.restockOrderId], (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
+            const date = dayjs(data.returnDate).format(' YYYY/MM/DD HH:MM') 
+            if(date=='Invalid Date'){
+                reject({error: "Invalid date!"});
+            }else{
+                this.db.run(sql, [date, JSON.stringify(data.products), data.restockOrderId], (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve();
+                });
+            }
         });
     }
 
@@ -370,11 +353,9 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 if (rows.length < 1) {
                     reject({ error: 'no return order associated to id' });
-                    return
                 }
 
                 const sql2 = "DELETE FROM RETURNORDER SET WHERE ID = ?"
@@ -382,7 +363,6 @@ class controlOrder {
                     if (err) {
                         console.log(err);
                         reject(err);
-                        return;
                     }
                     resolve();
                 });
@@ -398,7 +378,6 @@ class controlOrder {
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
-                    return;
                 }
                 resolve(this.lastID);
             });
@@ -412,7 +391,6 @@ class controlOrder {
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
-                    return;
                 }
                 resolve(this.lastID);
             });
@@ -428,7 +406,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 const orders = rows.map((r) => (
                     {
@@ -451,7 +428,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 const orders = rows.map((r) => (
                     {
@@ -474,7 +450,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 const orders = rows.map((r) => (
                     {
@@ -497,7 +472,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 const r = row[0]
                 if (r === undefined) {
@@ -520,13 +494,17 @@ class controlOrder {
     newInternalOrder(data) {
         return new Promise((resolve, reject) => {
             const sql = 'INSERT INTO INTERNALORDER(ISSUEDATE, PRODUCTS, STATE, CUSTOMERID) VALUES(?, ?, "ISSUED", ?)';
-            this.db.run(sql, [data.issueDate, JSON.stringify(data.products), data.customerId], (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                resolve();
-            });
+            const date = dayjs(data.issueDate).format('YYYY/MM/DD HH:MM') ;
+            if(date=='Invalid Date'){
+                reject({error: "Invalid date!"});
+            }else{
+                this.db.run(sql, [date, JSON.stringify(data.products), data.customerId], (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve();
+                });
+            }
         });
     }
 
@@ -539,7 +517,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 console.log(rows);
                 
@@ -557,7 +534,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 console.log(rows);
                 resolve();
@@ -574,7 +550,6 @@ class controlOrder {
                 if (err) {
                     console.log(err);
                     reject(err);
-                    return;
                 }
                 if (rows.length < 1) {
                     reject({ error: 'no internal order associated to id' });
@@ -586,7 +561,6 @@ class controlOrder {
                     if (err) {
                         console.log(err);
                         reject(err);
-                        return;
                     }
                     resolve();
                 });
