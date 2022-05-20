@@ -283,7 +283,7 @@ router.put('/users/:username', async (req, res) => {
 
 // DELETE
 
-router.delete('/deleteTable', (req, res) => {
+router.delete('/allUsers', (req, res) => {
     try {
         db.dropTable();
         res.status(204).end();

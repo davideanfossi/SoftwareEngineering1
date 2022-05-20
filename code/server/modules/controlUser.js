@@ -9,9 +9,9 @@ class controlUser {
 
     }
 
-    dropTable() {
+    dropContentUser() {
         return new Promise((resolve, reject) => {
-            const sql = 'DROP TABLE IF EXISTS USER';
+            const sql = 'TRUNCATE TABLE USER';
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
