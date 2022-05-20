@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const controlUser = require('../modules/controlUser');
-const db = new controlUser('EzWh.db')
-
+const userService = require('../services/user_service');
+const db = new controlUser('EzWh.db');
+const service = new userService(db);
 
 // <----------- CONTROL USER ----------->
 // GET 
 
 router.get('/users', async (req, res) => {
     try {
-        const userlist = await db.getUsers()
+        const userlist = await service.getUsers()
         res.status(200).json(userlist);
     } catch (err) {
         res.status(500).end();
@@ -28,7 +29,7 @@ router.get('/all', async (req, res) => {
 
 router.get('/suppliers', async (req, res) => {
     try {
-        const supplierlist = await db.getSuppliers();
+        const supplierlist = await service.getSuppliers();
         res.status(200).json(supplierlist);
     } catch (err) {
         res.status(500).end();
@@ -39,9 +40,12 @@ router.get('/suppliers', async (req, res) => {
 // POST
 
 router.post('/newUser', async (req, res) => {
+    
+
     if (Object.keys(req.body).length === 0) {
         return res.status(422).json({ error: `Empty body request` });
     }
+    
     let user = req.body;
 
     if (user === undefined || user.name === undefined || user.surname === undefined || user.username === undefined || user.type === undefined ||
@@ -54,15 +58,16 @@ router.post('/newUser', async (req, res) => {
         return res.status(422).json({ error: 'la password deve essere almeno di 8 caratteri' })
     }
 
+
     try {
         await db.newTableUser();
-        await db.checkUser(user, 'newUser')
+        const res = await service.checkUser(user, 'newUser')
     } catch (err) {
         return res.status(409).json({ error: `user with same mail and type already exists` });
     }
 
     try {
-        await db.createUser(user);
+        await service.createUser(user);
         return res.status(201).end();
 
     } catch (err) {
@@ -87,7 +92,7 @@ router.post('/managerSessions', async (req, res) => {
 
     try {
 
-        const info = await db.session(credentials, 'manager');
+        const info = await service.session(credentials, 'manager');
         return res.status(200).json(info);
 
     } catch (err) {
@@ -116,7 +121,7 @@ router.post('/customerSessions', async (req, res) => {
 
     try {
 
-        const info = await db.session(credentials, 'customer');
+        const info = await service.session(credentials, 'customer');
         return res.status(200).json(info);
 
     } catch (err) {
@@ -145,7 +150,7 @@ router.post('/supplierSessions', async (req, res) => {
 
     try {
 
-        const info = await db.session(credentials, 'supplier');
+        const info = await service.session(credentials, 'supplier');
         return res.status(200).json(info);
 
     } catch (err) {
@@ -174,7 +179,7 @@ router.post('/clerkSessions', async (req, res) => {
 
     try {
 
-        const info = await db.session(credentials, 'clerk');
+        const info = await service.session(credentials, 'clerk');
         return res.status(200).json(info);
 
     } catch (err) {
@@ -203,7 +208,7 @@ router.post('/qualityEmployeeSessions', async (req, res) => {
 
     try {
 
-        const info = await db.session(credentials, 'qualityEmployee');
+        const info = await service.session(credentials, 'qualityEmployee');
         return res.status(200).json(info);
 
     } catch (err) {
@@ -232,7 +237,7 @@ router.post('/deliveryEmployeeSessions', async (req, res) => {
 
     try {
 
-        const info = await db.session(credentials, 'deliveryEmployee');
+        const info = await service.session(credentials, 'deliveryEmployee');
         return res.status(200).json(info);
 
     } catch (err) {
@@ -268,8 +273,8 @@ router.put('/users/:username', async (req, res) => {
             username: req.params.username,
             type: rights.oldType
         }
-        await db.checkUser(data, '')
-        await db.modifyUserRights(req.params.username, rights);
+        await service.checkUser(data, '')
+        await service.modifyUserRights(req.params.username, rights);
         res.status(200).end()
     } catch (err) {
         if (err == 'not found')
@@ -283,9 +288,9 @@ router.put('/users/:username', async (req, res) => {
 
 // DELETE
 
-router.delete('/deleteTable', (req, res) => {
+router.delete('/allUsers', (req, res) => {
     try {
-        db.dropTable();
+        service.deleteAll();
         res.status(204).end();
     } catch (err) {
         res.status(500).end();
@@ -305,8 +310,8 @@ router.delete('/users/:username/:type', async (req, res) => {
     }
 
     try {
-        await db.checkUser(p, 'deleteUser');
-        await db.deleteUser(p.username, p.type);
+        await service.checkUser(p, 'deleteUser');
+        await service.deleteUser(p.username, p.type);
         res.status(204).end()
     } catch (err) {
         if (err === 'not found')

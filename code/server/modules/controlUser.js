@@ -9,15 +9,15 @@ class controlUser {
 
     }
 
-    dropTable() {
+    dropContentUser() {
         return new Promise((resolve, reject) => {
-            const sql = 'DROP TABLE IF EXISTS USER';
+            const sql = 'TRUNCATE TABLE USER';
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                resolve(this.lastID);
+                resolve()
             });
         });
     }
@@ -116,7 +116,7 @@ class controlUser {
 
                 if (typeOfCheck === 'newUser') {
                     if (rows.length > 0)
-                        reject(false)
+                        reject(false);
                     else
                         resolve(true);
                 }else{
@@ -130,6 +130,7 @@ class controlUser {
         });
     }
 
+    // forse non serve più
     getUserInfo(id) {
         return new Promise((resolve, reject) => {
             const sql = "SELECT * FROM USER WHERE ID = ?"
@@ -194,13 +195,14 @@ class controlUser {
                     return;
                 }
 
-                const info = rows.map((r) => (
+                const r = rows[0];
+                
+                const info = 
                     {
                         id: r.ID,
                         username: r.USERNAME,
                         name: r.NAME
                     }
-                ));
 
                 if (rows.length > 0)
                     resolve(info)
