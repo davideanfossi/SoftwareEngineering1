@@ -13,7 +13,8 @@ describe('test user apis', () => {
     })
 
     deleteAllData(204);
-    /* newUser(201, 'mmz', 'Maurizio', "Morisio", "admin");
+    /* 
+    newUser(201, 'mmz', 'Maurizio', "Morisio", "admin");
     newUser(422);
     getUser(200, 'mmz', 'Maurizio', "Morisio", "admin"); */
 

@@ -22,11 +22,11 @@ POST http://localhost:3001/api/newUser
 Content-Type: application/json
 
 {
-    "username":"user14@ezwh.com",
+    "username":"user115@ezwh.com",
     "name":"Pippo",
     "surname" : "Pelle",
     "password" : "ciao1234",
-    "type" : "pluto"
+    "type" : "customer"
 
 }
 
