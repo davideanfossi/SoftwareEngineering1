@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const controlSku = require('../modules/controlSku');
+const skuService = require('../services/sku_service');
 const db = new controlSku('EzWh.db')
+const sku_service = new skuService(db)
 
 // <----------- CONTROL SKU  ----------->
 
+//GET
 
 router.get('/skus', async (req, res) => {
     try {
@@ -19,7 +22,7 @@ router.get('/skus', async (req, res) => {
         console.log(err);
         res.status(500).end();
     }
-})
+})  // x
 
 router.get('/skus/:id', async (req, res) => {
 
@@ -27,7 +30,7 @@ router.get('/skus/:id', async (req, res) => {
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        const skus = await db.getSkuById(req.params.id);
+        const skus = await sku_service.getSkuById(req.params.id);
         res.status(200).json(skus);
     } catch (err) {
         if (err == "not found")
@@ -35,34 +38,16 @@ router.get('/skus/:id', async (req, res) => {
         else
             res.status(500).end();
     }
-});
+}); 
 
-router.get('/skuitems', async (req, res) => {
+router.get('/skuitems', async (req, res) => {               
     try {
-        const SKUItemsList = await db.getSKUItems();
+        const SKUItemsList = await sku_service.getSKUItems();
         res.status(200).json(SKUItemsList);
     } catch (err) {
         res.status(500).end();
     }
-});
-
-router.get('/positions', async (req, res) => {
-    try {
-        const PositionsList = await db.getPositions();
-        res.status(200).json(PositionsList);
-    } catch (err) {
-        res.status(500).end();
-    }
-});
-
-router.get('/items', async (req, res) => {
-    try {
-        const ItemList = await db.getItems();
-        res.status(200).json(ItemList);
-    } catch (err) {
-        res.status(500).end();
-    }
-});
+}); 
 
 router.get('/skuitems/sku/:id', async (req, res) => {
     if (id === undefined || id === '') {
@@ -70,7 +55,7 @@ router.get('/skuitems/sku/:id', async (req, res) => {
     }
 
     try {
-        const skuitems = await db.getSKUItemsAvailable(id);
+        const skuitems = await sku_service.getSKUItemsAvailable(id);
         res.status(200).json(skuitems);
     } catch (err) {
         if (err = 'not found')
@@ -87,13 +72,31 @@ router.get('/skuitems/:rfid', async (req, res) => {
     }
 
     try {
-        const skuitem = await db.getSKUItem(rfid);
+        const skuitem = await sku_service.getSKUItem(rfid);
         res.status(200).json(skuitem);
     } catch (err) {
         if (err = 'not found')
             res.status(404).json({ error: `no SKUItem associated to RFID` })
         else
             res.status(503).end()
+    }
+}); 
+
+router.get('/positions', async (req, res) => {
+    try {
+        const PositionsList = await sku_service.getPositions();
+        res.status(200).json(PositionsList);
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
+
+router.get('/items', async (req, res) => {
+    try {
+        const ItemList = await sku_service.getItems();
+        res.status(200).json(ItemList);
+    } catch (err) {
+        res.status(500).end();
     }
 });
 
@@ -105,7 +108,7 @@ router.get('/items/:id', async (req, res) => {
     }
 
     try {
-        const item = await db.getItem(id);
+        const item = await sku_service.getItem(id);
         res.status(200).json(item);
     } catch (err) {
         if (err = 'not found')
@@ -129,15 +132,15 @@ router.post('/sku', async (req, res) => {
     }
 
     try {
-        await db.newTableSku();
-        await db.createSku(sku);
+        await sku_service.newTableSku();
+        await sku_service.createSku(sku);
         return res.status(201).end();
     } catch (err) {
         console.log(err);
         res.status(500).end();
     }
 
-});
+}); 
 
 router.post('/skuitem', async (req, res) => {
     if (Object.keys(req.body).length === 0) {
@@ -165,16 +168,15 @@ router.post('/skuitem', async (req, res) => {
         else
             return res.status(422).json({ error: `newDateOfStock is not a date` });
     }
-
     try {
-        await db.newTableSKUItem();
-        await db.createSKUItem(SKUItem);
+        await sku_service.newTableSKUItem();
+        await sku_service.createSKUItem(SKUItem);
         return res.status(201).end();
 
     } catch (err) {
         res.status(503).end();
     }
-});
+}); 
 
 router.post('/position', async (req, res) => {
     if (Object.keys(req.body).length === 0) {
@@ -188,8 +190,8 @@ router.post('/position', async (req, res) => {
 
     }
     try {
-        await db.newTablePosition();
-        await db.createPosition(position);
+        await sku_service.newTablePosition();
+        await sku_service.createPosition(position);
         return res.status(201).end();
 
     } catch (err) {
@@ -210,14 +212,16 @@ router.post('/item', async (req, res) => {
 
     }
     try {
-        await db.newTableItem();
-        await db.createItem(Item);
+        await sku_service.newTableItem();
+        await sku_service.createItem(Item);
         return res.status(201).end();
 
     } catch (err) {
         res.status(503).end();
     }
 });
+
+//PUT
 
 router.put('/sku/:id', async (req, res) => {
     if (!Number.isInteger(parseInt(req.params.id)))
@@ -243,7 +247,7 @@ router.put('/sku/:id', async (req, res) => {
         else
             res.status(503).end()
     }
-});
+}); // x
 
 router.put('/sku/:id/position', async (req, res) => {
     if (!Number.isInteger(parseInt(req.params.id)))
@@ -273,10 +277,9 @@ router.put('/sku/:id/position', async (req, res) => {
             console.log(err);
         res.status(503).json({ err }).end()
     }
-});
+}); // x
 
 router.put('/skuitems/:rfid', async (req, res) => {
-
     if (Object.keys(req.body).length === 0) {
         return res.status(422).json({ error: `Empty body request` });
     }
@@ -305,7 +308,7 @@ router.put('/skuitems/:rfid', async (req, res) => {
 
 
     try {
-        await db.modifySKUItem(req.params.rfid, data);
+        await sku_service.modifySKUItem(req.params.rfid, data);
         res.status(200).end()
     } catch (err) {
         if (err = 'not found')
@@ -313,7 +316,7 @@ router.put('/skuitems/:rfid', async (req, res) => {
         else
             res.status(503).end()
     }
-})
+}); 
 
 router.put('/position/:positionID', async (req, res) => {
 
@@ -329,7 +332,7 @@ router.put('/position/:positionID', async (req, res) => {
         return res.status(422).json({ error: `Invalid data` });
 
     try {
-        await db.modifyPosition(req.params.positionID, data);
+        await sku_service.modifyPosition(req.params.positionID, data);
         res.status(200).end()
     } catch (err) {
         if (err = 'not found')
@@ -337,7 +340,7 @@ router.put('/position/:positionID', async (req, res) => {
         else
             res.status(503).end()
     }
-})
+}); 
 
 router.put('/position/:positionID/changeID', async (req, res) => {
 
@@ -352,7 +355,7 @@ router.put('/position/:positionID/changeID', async (req, res) => {
         return res.status(422).json({ error: `Invalid data` });
 
     try {
-        await db.modifyPositionID(req.params.positionID, newPositionID);
+        await sku_service.modifyPositionID(req.params.positionID, newPositionID);
         res.status(200).end()
     } catch (err) {
         if (err = 'not found')
@@ -360,7 +363,7 @@ router.put('/position/:positionID/changeID', async (req, res) => {
         else
             res.status(503).end()
     }
-})
+});
 
 router.put('/item/:id', async (req, res) => {
 
@@ -375,7 +378,7 @@ router.put('/item/:id', async (req, res) => {
         return res.status(422).json({ error: `Invalid data` });
 
     try {
-        await db.modifyItem(req.params.id, data);
+        await sku_service.modifyItem(req.params.id, data);
         res.status(200).end()
     } catch (err) {
         if (err = 'not found')
@@ -383,7 +386,9 @@ router.put('/item/:id', async (req, res) => {
         else
             res.status(503).end()
     }
-})
+}); 
+
+//DELETE
 
 router.delete('/skus/:id', async (req, res) => {
 
@@ -391,7 +396,7 @@ router.delete('/skus/:id', async (req, res) => {
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        await db.deleteSku(req.params.id);
+        await sku_service.deleteSku(req.params.id);
         res.status(204).end();
     } catch (err) {
         if (err == "not found")
@@ -399,7 +404,7 @@ router.delete('/skus/:id', async (req, res) => {
         else
             res.status(503).end();
     }
-})
+});
 
 router.delete('/deleteSKUItemTable', async (req, res) => {
     try {
@@ -408,7 +413,7 @@ router.delete('/deleteSKUItemTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-})
+}); // x
 
 router.delete('/deletePositionTable', async (req, res) => {
     try {
@@ -417,7 +422,7 @@ router.delete('/deletePositionTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-})
+}); // x
 
 router.delete('/deleteItemTable', async (req, res) => {
     try {
@@ -426,7 +431,7 @@ router.delete('/deleteItemTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-})
+}); // x
 
 router.delete('/skuitems/:rfid', async (req, res) => {
     const rfid = req.params.rfid;
@@ -434,12 +439,12 @@ router.delete('/skuitems/:rfid', async (req, res) => {
         return res.status(422).json({ error: `Invalid data` });
 
     try {
-        await db.deleteSKUItem(rfid);
+        await sku_service.deleteSKUItem(rfid);
         res.status(204).end()
     } catch (err) {
         res.status(503).end()
     }
-})
+});
 
 router.delete('/position/:positionID', async (req, res) => {
     const positionID = req.params.positionID;
@@ -447,12 +452,12 @@ router.delete('/position/:positionID', async (req, res) => {
         return res.status(422).json({ error: `Invalid data` });
 
     try {
-        await db.deletePosition(positionID);
+        await sku_service.deletePosition(positionID);
         res.status(204).end()
     } catch (err) {
         res.status(503).end()
     }
-})
+});
 
 router.delete('/items/:id', async (req, res) => {
     const id = req.params.id;
@@ -460,11 +465,11 @@ router.delete('/items/:id', async (req, res) => {
         return res.status(422).json({ error: `Invalid data` });
 
     try {
-        await db.deleteItem(id);
+        await sku_service.deleteItem(id);
         res.status(204).end()
     } catch (err) {
         res.status(503).end()
     }
-})
+}); 
 
 module.exports = router;
