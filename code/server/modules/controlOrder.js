@@ -17,7 +17,7 @@ class controlOrder {
             const sql = 'DROP TABLE IF EXISTS RESTOCKORDER';
             this.db.run(sql, (err) => {
                 if (err) {
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 resolve(this.lastID);
             });
@@ -29,7 +29,7 @@ class controlOrder {
             const sql = "CREATE TABLE IF NOT EXISTS RESTOCKORDER(ID INTEGER PRIMARY KEY AUTOINCREMENT,ISSUEDATE TIMESTAMP ,STATE VARCHAR CHECK(STATE IN ('ISSUED', 'DELIVERY', 'DELIVERED', 'TESTED', 'COMPLETEDRETURN', 'COMPLETED')), PRODUCTS TEXT, SUPPLIERID INTEGER, TRANSPORTNOTE VARCHAR, SKUITEMS TEXT)";
             this.db.run(sql, (err) => {
                 if (err) {
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 resolve(this.lastID);
             });
@@ -43,7 +43,7 @@ class controlOrder {
             this.db.all(sql, [], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
 
                 const orders = rows.map((r) => (
@@ -70,7 +70,7 @@ class controlOrder {
             this.db.all(sql, [], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 const orders = rows.map((r) => (
                     {
@@ -95,12 +95,12 @@ class controlOrder {
             this.db.all(sql, [id], (err, row) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
 
                 if (row.length < 1) {
                     
-                    reject({ error: 'no restock order associated to id' });
+                    reject({ error: 'no restock order associated to id',code:404});
                 }else{
 
                     const r = row[0];
@@ -129,7 +129,7 @@ class controlOrder {
             this.db.all(sql, [id], (err, row) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
 
                 const skuItems = JSON.parse(row[0].SKUITEMS);
@@ -142,17 +142,14 @@ class controlOrder {
     newRestockOrder(data) {
         return new Promise((resolve, reject) => {
             const sql = 'INSERT INTO RESTOCKORDER(ISSUEDATE, PRODUCTS, SUPPLIERID) VALUES(?, ?, ?)';
-            const date = dayjs(data.issueDate).format(' YYYY/MM/DD HH:MM') 
-            if(date=='Invalid Date'){
-                reject({error: "Invalid date!"});
-            }else{
-                this.db.run(sql, [date, JSON.stringify(data.products), data.supplierId], (err) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve();
-                });
-            }
+            const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:MM') 
+            this.db.run(sql, [date, JSON.stringify(data.products), data.supplierId], (err) => {
+                if (err) {
+                    reject({error:err, code:500});
+                }
+                resolve();
+            });
+            
         });
     }
 
@@ -162,19 +159,20 @@ class controlOrder {
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
-                if (rows.length < 1)
-                    reject({ error: 'no restock order associated to id' });
-            });
-            const sql2 = "UPDATE RESTOCKORDER SET STATE = ? WHERE ID = ?"
-            this.db.all(sql2, [state, id], (err, rows) => {
-                if (err) {
-                    console.log(err);
-                    reject(err);
+                if (rows.length < 1){
+                    reject({ error: 'no restock order associated to id', code:404});
                 }
-                console.log(rows);
-                resolve();
+                const sql2 = "UPDATE RESTOCKORDER SET STATE = ? WHERE ID = ?"
+                this.db.all(sql2, [state, id], (err, rows) => {
+                    if (err) {
+                        console.log(err);
+                        reject({error:err, code:500});
+                    }
+                    console.log(rows);
+                    resolve();
+                });
             });
         });
     }
@@ -184,7 +182,7 @@ class controlOrder {
             const sql1 = "SELECT ID, SKUITEMS FROM RESTOCKORDER WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
+                    console.log({error:err, code:500});
                     reject(err);
                 }
                 if (rows.length < 1) {
@@ -199,7 +197,7 @@ class controlOrder {
                 this.db.all(sql2, [JSON.stringify(skus), id], (err, rows) => {
                     if (err) {
                         console.log(err);
-                        reject(err);
+                        reject({error:err, code:500});
                     }
                     resolve();
                 });
@@ -215,17 +213,16 @@ class controlOrder {
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 if (rows.length < 1) {
                     reject({ error: 'no restock order associated to id' });
                 }
-
                 const sql2 = "UPDATE RESTOCKORDER SET transportNote = ? WHERE ID = ?"
                 this.db.all(sql2, [JSON.stringify(note), id], (err, rows) => {
                     if (err) {
                         console.log(err);
-                        reject(err);
+                        reject({error:err, code:500});
                     }
                     resolve();
                 });
@@ -239,17 +236,16 @@ class controlOrder {
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 if (rows.length < 1) {
-                    reject({ error: 'no restock order associated to id' });
+                    reject({ error: 'no restock order associated to id', code:404});
                 }
-
                 const sql2 = "DELETE FROM RESTOCKORDER WHERE ID = ?"
                 this.db.all(sql2, [id], (err, rows) => {
                     if (err) {
                         console.log(err);
-                        reject(err);
+                        reject({error:err, code:500});
                     }
                     resolve();
                 });
@@ -263,7 +259,7 @@ class controlOrder {
             const sql = 'DROP TABLE IF EXISTS RETURNORDER';
             this.db.run(sql, (err) => {
                 if (err) {
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 resolve(this.lastID);
             });
@@ -275,7 +271,7 @@ class controlOrder {
             const sql = "CREATE TABLE IF NOT EXISTS RETURNORDER(ID INTEGER PRIMARY KEY AUTOINCREMENT,RETURNDATE TIMESTAMP, PRODUCTS TEXT, RESTOCKORDERID INTEGER)";
             this.db.run(sql, (err) => {
                 if (err) {
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 resolve(this.lastID);
             });
@@ -285,13 +281,11 @@ class controlOrder {
     getReturnOrders() {
         return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM RETURNORDER`;
-
             this.db.all(sql, [], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
-
                 const orders = rows.map((r) => (
                     {
                         id: r.ID,
@@ -311,11 +305,11 @@ class controlOrder {
             this.db.all(sql, [id], (err, row) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 const r = row[0];
                 if (r === undefined) {
-                    reject({ error: 'no return order associated to id' });
+                    reject({ error: 'no return order associated to id', code:404});
                 }
                 const order =
                 {
@@ -332,17 +326,13 @@ class controlOrder {
     newReturnOrder(data) {
         return new Promise((resolve, reject) => {
             const sql = 'INSERT INTO RETURNORDER(RETURNDATE, PRODUCTS, RESTOCKORDERID) VALUES(?, ?, ?)';
-            const date = dayjs(data.returnDate).format(' YYYY/MM/DD HH:MM') 
-            if(date=='Invalid Date'){
-                reject({error: "Invalid date!"});
-            }else{
-                this.db.run(sql, [date, JSON.stringify(data.products), data.restockOrderId], (err) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve();
-                });
-            }
+            const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:MM') 
+            this.db.run(sql, [date, JSON.stringify(data.products), data.restockOrderId], (err) => {
+                if (err) {
+                    reject({error:err, code:500});
+                }
+                resolve();
+            });
         });
     }
 
@@ -352,17 +342,16 @@ class controlOrder {
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 if (rows.length < 1) {
-                    reject({ error: 'no return order associated to id' });
+                    reject({ error: 'no return order associated to id', code:500});
                 }
-
                 const sql2 = "DELETE FROM RETURNORDER SET WHERE ID = ?"
                 this.db.all(sql2, [id], (err, rows) => {
                     if (err) {
                         console.log(err);
-                        reject(err);
+                        reject({error:err, code:500});
                     }
                     resolve();
                 });
@@ -377,9 +366,9 @@ class controlOrder {
             const sql = 'DROP TABLE IF EXISTS INTERNALORDER';
             this.db.run(sql, (err) => {
                 if (err) {
-                    reject(err);
+                    reject({error:err, code:500});
                 }
-                resolve(this.lastID);
+                resolve();
             });
         });
     }
@@ -390,9 +379,9 @@ class controlOrder {
             const sql = "CREATE TABLE IF NOT EXISTS INTERNALORDER(ID INTEGER PRIMARY KEY AUTOINCREMENT,ISSUEDATE TIMESTAMP ,STATE VARCHAR CHECK(STATE IN ('ISSUED', 'ACCEPTED', 'REFUSED', 'CANCELED', 'COMPLETED')), PRODUCTS TEXT, CUSTOMERID INTEGER)";
             this.db.run(sql, (err) => {
                 if (err) {
-                    reject(err);
+                    reject({error:err, code:500});
                 }
-                resolve(this.lastID);
+                resolve();
             });
         });
     }
@@ -405,7 +394,7 @@ class controlOrder {
             this.db.all(sql, [], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 const orders = rows.map((r) => (
                     {
@@ -427,7 +416,7 @@ class controlOrder {
             this.db.all(sql, [], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 const orders = rows.map((r) => (
                     {
@@ -449,7 +438,7 @@ class controlOrder {
             this.db.all(sql, [], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 const orders = rows.map((r) => (
                     {
@@ -471,11 +460,11 @@ class controlOrder {
             this.db.all(sql, [id], (err, row) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 const r = row[0]
                 if (r === undefined) {
-                    reject({ error: 'no internal order associated to id' });
+                    reject({ error: 'no internal order associated to id', code:422});
                 }
                 const order =
                 {
@@ -495,16 +484,12 @@ class controlOrder {
         return new Promise((resolve, reject) => {
             const sql = 'INSERT INTO INTERNALORDER(ISSUEDATE, PRODUCTS, STATE, CUSTOMERID) VALUES(?, ?, "ISSUED", ?)';
             const date = dayjs(data.issueDate).format('YYYY/MM/DD HH:MM') ;
-            if(date=='Invalid Date'){
-                reject({error: "Invalid date!"});
-            }else{
-                this.db.run(sql, [date, JSON.stringify(data.products), data.customerId], (err) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve();
-                });
-            }
+            this.db.run(sql, [date, JSON.stringify(data.products), data.customerId], (err) => {
+                if (err) {
+                    reject({error:err, code:500});
+                }
+                resolve();
+            });
         });
     }
 
@@ -516,27 +501,23 @@ class controlOrder {
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 console.log(rows);
                 
                 if (rows.length < 1) {
-                    reject({ error: 'no internal order associated to id' });
+                    reject({ error: 'no internal order associated to id', code:404});
                 }else{
                     products = products.concat(JSON.parse(rows[0].PRODUCTS));
                 }
-            });
-
-            
-
-            const sql2 = "UPDATE INTERNALORDER SET STATE = ?, products = ? WHERE ID = ?"
-            this.db.all(sql2, [state, JSON.stringify(products), id], (err, rows) => {
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                }
-                console.log(rows);
-                resolve();
+                const sql2 = "UPDATE INTERNALORDER SET STATE = ?, products = ? WHERE ID = ?"
+                this.db.all(sql2, [state, JSON.stringify(products), id], (err, rows) => {
+                    if (err) {
+                        console.log(err);
+                        reject({error:err, code:500});
+                    }
+                    resolve();
+                });
             });
         });
     }
@@ -549,18 +530,17 @@ class controlOrder {
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject({error:err, code:500});
                 }
                 if (rows.length < 1) {
                     reject({ error: 'no internal order associated to id' });
                     return
                 }
-
                 const sql2 = "DELETE FROM INTERNALORDER WHERE ID = ?"
                 this.db.all(sql2, [id], (err, rows) => {
                     if (err) {
                         console.log(err);
-                        reject(err);
+                        reject({error:err, code:500});
                     }
                     resolve();
                 });

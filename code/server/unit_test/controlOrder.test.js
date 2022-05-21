@@ -56,16 +56,20 @@ describe('test restock order fn', () => {
         );
     });
 
-    test('unexpected date format', async () => { 
+    test('unexpected data format', async () => { 
         const sentData = {
             "issueDate":"yesterday",
             "products": [{"SKUId":12,"description":"a product","price":10.99,"qty":30},
             {"SKUId":180,"description":"another product","price":11.99,"qty":20}],
-            "supplierId" : 1
+            "supplierId" : "B"
         }
         await controler.newTableRestockOrder();
-        await controler.newRestockOrder(sentData);
-        var res = controler.getRestockOrders();
-        await expect(res).rejects.toEqual({error: "Invalid date!"});
+        try {
+            await controler.newRestockOrder(sentData);
+        } catch (error) {
+            expect(error).toEqual({error: "Invalid date!"});
+        }
     });
+
+
 });
