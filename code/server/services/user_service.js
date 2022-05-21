@@ -7,10 +7,16 @@ class UserService {
 
     createUser = async (data) => {
 
-        const res = await service.checkUser(user, 'newUser')
+        try{
 
-        if (res === undefined)
-            return 409;
+            await this.checkUser(data, 'newUser');
+
+        }catch (err){
+            throw err;
+        }
+        
+
+        
         
         const lastId = await this.dao.createUser(data);
         return lastId;
@@ -19,21 +25,21 @@ class UserService {
     getUsers = async () => {
         const users = await this.dao.getUsers();
 
+        console.log(users);
         let usersDTO = users.map((user) => ({
 
-            id: user.id,
-            name: user.name,
-            surname: user.surname,
-            email: user.username,
-            type: user.type
+            id: user.ID,
+            name: user.NAME,
+            surname: user.SURNAME,
+            email: user.USERNAME,
+            type: user.TYPE
 
         }))
         return usersDTO;
     }
 
     checkUser = async (data, type) => {
-        res = await this.dao.checkUser(data, type);
-        console.log(res);
+        const res = await this.dao.checkUser(data, type);
         return res;
     }
 
@@ -42,10 +48,11 @@ class UserService {
 
         let suppliersDTO = suppliers.map((supplier) => ({
 
-            id: supplier.id,
-            name: supplier.name,
-            surname: supplier.surname,
-            email: supplier.username
+            id: supplier.ID,
+            name: supplier.NAME,
+            surname: supplier.SURNAME,
+            email: supplier.USERNAME
+
         }));
 
         return suppliersDTO;
@@ -57,9 +64,9 @@ class UserService {
 
         let infoDTO = {
 
-            id: info.id,
-            username: info.username,
-            name: info.name
+            id: info.ID,
+            username: info.USERNAME,
+            name: info.NAME
 
         }
 
@@ -78,6 +85,7 @@ class UserService {
 
     deleteAll = async () => {
         const res = await this.dao.dropContentUser();
+        return res;
     }
 }
 

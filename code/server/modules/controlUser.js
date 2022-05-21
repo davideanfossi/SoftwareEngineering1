@@ -60,16 +60,8 @@ class controlUser {
                     reject(err);
                     return;
                 }
-                const users = rows.map((r) => (
-                    {
-                        id: r.ID,
-                        name: r.NAME,
-                        surname: r.SURNAME,
-                        email: r.USERNAME,
-                        type: r.TYPE
+                const users = rows;
 
-                    }
-                ));
                 resolve(users);
             });
         });
@@ -116,7 +108,7 @@ class controlUser {
 
                 if (typeOfCheck === 'newUser') {
                     if (rows.length > 0)
-                        reject(false);
+                        reject('user already exist');
                     else
                         resolve(true);
                 }else{
@@ -125,34 +117,6 @@ class controlUser {
                     else
                         reject('not found');
                 }
-
-            })
-        });
-    }
-
-    // forse non serve più
-    getUserInfo(id) {
-        return new Promise((resolve, reject) => {
-            const sql = "SELECT * FROM USER WHERE ID = ?"
-            this.db.all(sql, [id], (err, rows) => {
-
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                    return;
-                }
-
-                const info = rows.map((r) => (
-                    {
-                        id: r.ID,
-                        username: r.USERNAME,
-                        name: r.NAME,
-                        surname: r.SURNAME,
-                        type: r.TYPE
-                    }
-                ));
-
-                resolve(info)
 
             })
         });
@@ -169,14 +133,7 @@ class controlUser {
                     return;
                 }
 
-                const info = rows.map((r) => (
-                    {
-                        id: r.ID,
-                        name: r.NAME,
-                        surname: r.SURNAME,
-                        email: r.USERNAME
-                    }
-                ));
+                const info = rows
 
                 resolve(info)
 
@@ -195,17 +152,14 @@ class controlUser {
                     return;
                 }
 
-                const r = rows[0];
                 
-                const info = 
-                    {
-                        id: r.ID,
-                        username: r.USERNAME,
-                        name: r.NAME
-                    }
 
-                if (rows.length > 0)
-                    resolve(info)
+                if (rows.length > 0){
+
+                    const info = rows[0];
+                    resolve(info);
+
+                }
                 else
                     reject('data error');
             })

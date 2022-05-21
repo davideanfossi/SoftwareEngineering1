@@ -59,19 +59,19 @@ router.post('/newUser', async (req, res) => {
     }
 
 
-    try {
-        await db.newTableUser();
-        const res = await service.checkUser(user, 'newUser')
-    } catch (err) {
-        return res.status(409).json({ error: `user with same mail and type already exists` });
-    }
+ 
 
     try {
+        await db.newTableUser();
         await service.createUser(user);
         return res.status(201).end();
 
     } catch (err) {
-        return res.status(503).end();
+        console.log(err);
+        if(err === 'user already exist')
+            res.status(409).json({ error: `user with same mail and type already exists` });
+
+        res.status(503).end();
     }
 });
 
