@@ -1,16 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const controlTest = require('../modules/controlTest');
+const testService = require('../services/test_service');
 const db = new controlTest('EzWh.db')
+const service = new testService(db);
 
 // <----------- CONTROL TEST descriptor ----------->
 
 router.get('/testDescriptors', async (req, res) => {
     try {
-        const testDescriptorsList = await db.getTestDescriptors();
+        const testDescriptorsList = await service.getTestDescriptors();
         res.status(200).json(testDescriptorsList);
     } catch (err) {
-        res.status(500).end();
+        res.status(500).json({err}).end();
     }
 });
 
@@ -20,7 +22,7 @@ router.get('/testDescriptors/:id', async (req, res) => {
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        const testDescriptor = await db.getTestDescriptorById(req.params.id);
+        const testDescriptor = await service.getTestDescriptor(req.params.id);
         res.status(200).json(testDescriptor);
     } catch (err) {
         if (err == "not found")
@@ -43,18 +45,14 @@ router.post('/testDescriptor', async (req, res) => {
 
     try {
         await db.newTableTestDescriptor();
-        // is check name id_sku combo good??
-        await db.checkTestDescriptor(testDescriptor, 'newTest');
+        await service.checkTestDescriptor(testDescriptor);
     } catch (err) {
         return res.status(409).json({ error: `test with same name and id_sku already exists` });
     }
 
-    // check also that id_sku exist!!!
-
     try {
-        await db.createTestDescriptor(testDescriptor);
+        await service.createTestDescriptor(testDescriptor);
         return res.status(201).end();
-
     } catch (err) {
         res.status(500).json({ err }).end();
     }
@@ -62,7 +60,6 @@ router.post('/testDescriptor', async (req, res) => {
 });
 
 router.put('/testDescriptor/:id', async (req, res) => {
-
     if (Object.keys(req.body).length === 0) {
         return res.status(422).json({ error: `Empty body request` });
     }
@@ -74,16 +71,14 @@ router.put('/testDescriptor/:id', async (req, res) => {
 
     if (newTestDescriptor === undefined || newTestDescriptor.newName === undefined || newTestDescriptor.newProcedureDescription === undefined || newTestDescriptor.newIdSKU === undefined ||
         newTestDescriptor.newName === '' || newTestDescriptor.newProcedureDescription === '' || newTestDescriptor.newIdSKU === '') {
-
         return res.status(422).json({ error: `Invalid data` });
     }
 
     try {
-        await db.modifyTestDescriptor(req.params.id, newTestDescriptor);
+        await service.modifyTestDescriptor(req.params.id, newTestDescriptor);
         res.status(200).end()
     } catch (err) {
         if (err = 'not found')
-            //check also issku exist
             res.status(404).json({ error: `wrong id` })
         else
             res.status(503).end()
@@ -91,12 +86,11 @@ router.put('/testDescriptor/:id', async (req, res) => {
 })
 
 router.delete('/testDescriptor/:id', async (req, res) => {
-
     if (!Number.isInteger(parseInt(req.params.id)))
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        await db.deleteTestDescriptor(req.params.id);
+        await service.deleteTestDescriptor(req.params.id);
         res.status(204).end();
     } catch (err) {
         if (err == "not found")
@@ -130,7 +124,7 @@ router.get('/skuitems/:rfid/testResults/:id', async (req, res) => {
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        const testResult = await db.getTestResultById(req.params.rfid, req.params.id);
+        const testResult = await db.getTestResult(req.params.rfid, req.params.id);
         res.status(200).json(testResult);
     } catch (err) {
         if (err == "not found")
@@ -153,7 +147,7 @@ router.post('/skuitems/testResult', async (req, res) => {
     try {
         await db.newTableTestResults();
         await db.checkRfid(testResult.rfid);
-        await db.checkTestResult(testResult, 'newTest');
+        await db.checkTestResult(testResult);
     } catch (err) {
         return res.status(404).json({ error: `no sku item associated to rfid or no test descriptor associated to idTestDescriptor` });
     }
