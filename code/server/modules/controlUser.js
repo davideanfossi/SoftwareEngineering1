@@ -11,13 +11,13 @@ class controlUser {
 
     dropContentUser() {
         return new Promise((resolve, reject) => {
-            const sql = 'TRUNCATE TABLE USER';
+            const sql = 'DELETE FROM USER';
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                resolve()
+                resolve('eliminata con successo')
             });
         });
     }

@@ -9,14 +9,16 @@ var agent = chai.request.agent(app);
 describe('test user apis', () => {
 
     beforeEach(async () => {
-        await agent.delete('/users/allUsers');
+        await agent.delete('/api/allUsers');
     })
 
     deleteAllData(204);
-    /* 
-    newUser(201, 'mmz', 'Maurizio', "Morisio", "admin");
-    newUser(422);
-    getUser(200, 'mmz', 'Maurizio', "Morisio", "admin"); */
+    newUser(201, 'john.snow@supplier.ezwh.com', 'John', "Snow", "ciao1234", "supplier");
+    getSuppliers(200,'john.snow@supplier.ezwh.com', 'John', "Snow", "ciao1234", "supplier")
+    getUsers(200,'john.snow@supplier.ezwh.com', 'John', "Snow", "ciao1234", "customer")
+    
+    /*newUser(422);
+    getUser(200, 'mmz', 'Maurizio', "Morisio", "admin");*/
 
 });
 
@@ -38,14 +40,14 @@ function getSuppliers(expectedHTTPStatus, username, name, surname, password, typ
             .send(user)
             .then(function (res) {
                 res.should.have.status(201);
-                res.body.username.should.equal(username);
                 agent.get('/api/suppliers')
                     .then(function (r) {
                         r.should.have.status(expectedHTTPStatus);
-                        r.body.id.should.equal(id);
-                        r.body.name.should.equal(name);
-                        r.body.surname.should.equal(surname);
-                        r.body.email.should.equal(email);
+
+                        
+                        r.body[0].name.should.equal(name);
+                        r.body[0].surname.should.equal(surname);
+                        r.body[0].email.should.equal(username);
 
                         done();
                     });
@@ -60,15 +62,16 @@ function getUsers(expectedHTTPStatus,  username, name, surname, password, type) 
             .send(user)
             .then(function (res) {
                 res.should.have.status(201);
-                res.body.username.should.equal(username);
                 agent.get('/api/users')
                     .then(function (r) {
                         r.should.have.status(expectedHTTPStatus);
-                        r.body.id.should.equal(id);
-                        r.body.name.should.equal(name);
-                        r.body.surname.should.equal(surname);
-                        r.body.email.should.equal(email);
-                        r.body.type.should.equal(type);
+
+                        
+                        r.body[0].name.should.equal(name);
+                        r.body[0].surname.should.equal(surname);
+                        r.body[0].email.should.equal(username);
+                        r.body[0].type.should.equal(type);
+
 
                         done();
                     });
@@ -104,9 +107,10 @@ function managerSession(expectedHTTPStatus, username, name, surname, password, t
             agent.post('/api/managerSessions')
                 .send(user)
                 .then(function (res) {
+                    console.log(res.body);
                     res.should.have.status(expectedHTTPStatus);
 
-                    res.body.id.should.equal(1);
+                    
                     res.body.username.should.equal(username);
                     res.body.name.should.equal(name);
 
@@ -132,7 +136,7 @@ function customerSession(expectedHTTPStatus, username, name, surname, password, 
                 .then(function (res) {
                     res.should.have.status(expectedHTTPStatus);
 
-                    res.body.id.should.equal(1);
+                    
                     res.body.username.should.equal(username);
                     res.body.name.should.equal(name);
 
@@ -158,7 +162,7 @@ function supplierSession(expectedHTTPStatus, username, name, surname, password, 
                 .then(function (res) {
                     res.should.have.status(expectedHTTPStatus);
 
-                    res.body.id.should.equal(1);
+                    
                     res.body.username.should.equal(username);
                     res.body.name.should.equal(name);
                     
@@ -184,7 +188,7 @@ function clerkSession(expectedHTTPStatus, username, name, surname, password, typ
                 .then(function (res) {
                     res.should.have.status(expectedHTTPStatus);
 
-                    res.body.id.should.equal(1);
+                    
                     res.body.username.should.equal(username);
                     res.body.name.should.equal(name);
                     
@@ -210,7 +214,7 @@ function qualityEmplyeeSession(expectedHTTPStatus, username, name, surname, pass
                 .then(function (res) {
                     res.should.have.status(expectedHTTPStatus);
 
-                    res.body.id.should.equal(1);
+                    
                     res.body.username.should.equal(username);
                     res.body.name.should.equal(name);
                     
@@ -236,7 +240,7 @@ function deliveryEmployeeSession(expectedHTTPStatus, username, name, surname, pa
                 .then(function (res) {
                     res.should.have.status(expectedHTTPStatus);
 
-                    res.body.id.should.equal(1);
+                    
                     res.body.username.should.equal(username);
                     res.body.name.should.equal(name);
                     
@@ -262,7 +266,7 @@ function updateUserType(expectedHTTPStatus, username, oldType, newType) {
                 .then(function (res) {
                     res.should.have.status(expectedHTTPStatus);
 
-                    res.body.id.should.equal(1);
+                    
                     res.body.username.should.equal(username);
                     res.body.name.should.equal(name);
                     
