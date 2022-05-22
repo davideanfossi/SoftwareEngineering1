@@ -12,18 +12,7 @@ class OrderService {
     getRestockOrders = async () => {
         try {
             const orders = await this.dao.getRestockOrders();
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.SUPPLIERID,
-                    transportNote: JSON.parse(r.TRANSPORTNOTE),
-                    skuItems: JSON.parse(r.SKUITEMS)
-                }
-            ));
-            return orderDTO;
+            return orders;
         } catch (error) {
             return error
         }
@@ -32,18 +21,7 @@ class OrderService {
     getIssuedRestockOrders = async () => {
         try {
             const orders = await this.dao.getIssuedRestockOrders();
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.SUPPLIERID,
-                    transportNote: JSON.parse(r.TRANSPORTNOTE),
-                    skuItems: JSON.parse(r.SKUITEMS)
-                }
-            ));
-            return orderDTO;
+            return orders;
         } catch (error) {
             return error
         }
@@ -51,7 +29,7 @@ class OrderService {
     }
 
     getRestockOrder = async (id) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -77,7 +55,7 @@ class OrderService {
     }
 
     getSkuItemsByRestockOrder = async (id) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -85,9 +63,12 @@ class OrderService {
         }
         try {
             const orders = await this.dao.getRestockOrder(id);
+            if(orders.length<1){
+                throw {error: 'Restock order with given id not found', code: 404};
+            }
             orders.map((order)=>{
-                if(order.state != 'COMPLETEDRETURN'){
-                    throw {error: 'validation of id failed or restock order state != COMPLETEDRETURN', code: 422};
+                if(order.STATE != 'DELIVERED'){
+                    throw {error: 'Restock order state is not DELIVERED', code: 422};
                 }
             });
             const items = await this.dao.getSkuItemsByRestockOrder(id);
@@ -116,7 +97,7 @@ class OrderService {
         if (body === undefined || body.issueDate === undefined || body.products === undefined || body.supplierId === undefined) {
             throw {error: `Invalid body data`, code:422};
         }
-        const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:MM') 
+        const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:mm') 
         if(!dayjs(date).isValid()){
             throw {error: "Invalid date!", code:422};
         }
@@ -132,7 +113,7 @@ class OrderService {
     }
 
     modifyRestockOrderState = async (id, body) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -140,6 +121,10 @@ class OrderService {
         }
         if (body === undefined || body.newState === undefined) {
             throw { error: `Invalid body data`, code:422};
+        }
+        const states = ['ISSUED', 'DELIVERY', 'DELIVERED', 'TESTED', 'COMPLETEDRETURN', 'COMPLETED',null]
+        if(!states.includes(body.newState.toUpperCase())){
+            throw {error: `Invalid state`, code:422};
         }
         try {
             await this.dao.modifyRestockOrderState(id, body.newState);
@@ -150,7 +135,7 @@ class OrderService {
     }
 
     modifyRestockOrderSKUs = async (id, body) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -171,7 +156,7 @@ class OrderService {
     }
 
     modifyRestockOrderNote = async (id, body) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -189,7 +174,7 @@ class OrderService {
     }
 
     deleteRestockOrder = async (id) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -223,7 +208,7 @@ class OrderService {
     }
 
     getReturnOrder = async (id) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -258,7 +243,7 @@ class OrderService {
         if (body === undefined || body.returnDate === undefined || body.products === undefined || body.restockOrderId === undefined) {
             throw { error: `Invalid body data`, error:422};
         }
-        const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:MM') 
+        const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:mm') 
         if(!dayjs(date).isValid()){
             throw {error: "Invalid date!", code:422};
         }
@@ -274,7 +259,7 @@ class OrderService {
     }
 
     deleteReturnOrder = async (id) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -345,7 +330,7 @@ class OrderService {
     }
 
     getInternalOrder = async (id) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -381,7 +366,7 @@ class OrderService {
         if (body === undefined || body.issueDate === undefined || body.products === undefined || body.customerId === undefined) {
             throw { error: `Invalid body data`, code:422};
         }
-        const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:MM') 
+        const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:mm') 
         if(!dayjs(date).isValid()){
             throw {error: "Invalid date!", code:422};
         }
@@ -397,7 +382,7 @@ class OrderService {
     }
 
     modifyInternalOrder = async (id, body) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){
@@ -421,7 +406,7 @@ class OrderService {
     }
 
     deleteInternalOrder = async (id) => {
-        if(Number.isInteger(id)){
+        if(!Number.isInteger(id)){
             throw {error:"Id is not an integer number number", code:422}
         }
         if(id<=0){

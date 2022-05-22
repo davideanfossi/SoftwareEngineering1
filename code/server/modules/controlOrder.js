@@ -45,7 +45,6 @@ class controlOrder {
                     console.log(err);
                     reject({error:err, code:500});
                 }
-
                 const orders = rows.map((r) => (
                     {
                         id: r.ID,
@@ -102,19 +101,7 @@ class controlOrder {
                     
                     reject({ error: 'no restock order associated to id',code:404});
                 }else{
-
-                    const r = row[0];
-
-                    const order =
-                    {
-                        issueDate: r.ISSUEDATE,
-                        state: r.STATE,
-                        products: JSON.parse(r.PRODUCTS),
-                        supplierId: r.SUPPLIERID,
-                        transportNote: JSON.parse(r.TRANSPORTNOTE),
-                        skuItems: JSON.parse(r.SKUITEMS)
-                    }
-                    resolve(order);
+                    resolve(row);
                 }
 
                 
@@ -141,13 +128,25 @@ class controlOrder {
 
     newRestockOrder(data) {
         return new Promise((resolve, reject) => {
-            const sql = 'INSERT INTO RESTOCKORDER(ISSUEDATE, PRODUCTS, SUPPLIERID) VALUES(?, ?, ?)';
-            const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:MM') 
-            this.db.run(sql, [date, JSON.stringify(data.products), data.supplierId], (err) => {
+            const sql1 = "SELECT * FROM USER WHERE ID = ? AND TYPE = 'supplier';"
+            this.db.all(sql1, [data.supplierId], (err, rows) => {
                 if (err) {
+                    console.log(err)
                     reject({error:err, code:500});
                 }
-                resolve();
+                if(rows.length<1){
+                    console.log(err)
+                    reject({error:"No supplier matches the Id", code:422});
+                }
+                const sql = 'INSERT INTO RESTOCKORDER(ISSUEDATE, PRODUCTS, SUPPLIERID) VALUES(?, ?, ?)';
+                const date = dayjs(data.issueDate).format('YYYY/MM/DD HH:mm') 
+                this.db.run(sql, [date, JSON.stringify(data.products), data.supplierId], (err) => {
+                    if (err) {
+                        console.log(err)
+                        reject({error:err, code:500});
+                    }
+                    resolve();
+                });
             });
             
         });
@@ -170,7 +169,6 @@ class controlOrder {
                         console.log(err);
                         reject({error:err, code:500});
                     }
-                    console.log(rows);
                     resolve();
                 });
             });
@@ -182,11 +180,11 @@ class controlOrder {
             const sql1 = "SELECT ID, SKUITEMS FROM RESTOCKORDER WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log({error:err, code:500});
-                    reject(err);
+                    console.log(err);
+                    reject({error:err, code:500});
                 }
                 if (rows.length < 1) {
-                    reject({ error: 'no restock order associated to id' });
+                    reject({ error: 'no restock order associated to id', code:404 });
                 }
 
                 if (rows[0].SKUITEMS != null) {
@@ -314,7 +312,7 @@ class controlOrder {
                 const order =
                 {
                     id: r.ID,
-                    returnDate: r.ISSUEDATE,
+                    returnDate: r.RETURNDATE,
                     products: JSON.parse(r.PRODUCTS),
                     restockOrderId: r.RESTOCKORDERID,
                 }
@@ -325,13 +323,24 @@ class controlOrder {
 
     newReturnOrder(data) {
         return new Promise((resolve, reject) => {
-            const sql = 'INSERT INTO RETURNORDER(RETURNDATE, PRODUCTS, RESTOCKORDERID) VALUES(?, ?, ?)';
-            const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:MM') 
-            this.db.run(sql, [date, JSON.stringify(data.products), data.restockOrderId], (err) => {
+            const sql1 = "SELECT * FROM RESTOCKORDER WHERE ID = ?;"
+            this.db.all(sql1, [data.restockOrderId], (err, rows) => {
                 if (err) {
+                    console.log(err)
                     reject({error:err, code:500});
                 }
-                resolve();
+                if(rows.length<1){
+                    console.log(err)
+                    reject({error:"No restock order matches the Id", code:422});
+                }
+                const sql = 'INSERT INTO RETURNORDER(RETURNDATE, PRODUCTS, RESTOCKORDERID) VALUES(?, ?, ?)';
+                const date = dayjs(data.returnDate).format('YYYY/MM/DD HH:mm') 
+                this.db.run(sql, [date, JSON.stringify(data.products), data.restockOrderId], (err) => {
+                    if (err) {
+                        reject({error:err, code:500});
+                    }
+                    resolve();
+                });
             });
         });
     }
@@ -469,9 +478,10 @@ class controlOrder {
                 const order =
                 {
                     id: r.ID,
-                    returnDate: r.ISSUEDATE,
+                    issueDate: r.ISSUEDATE,
+                    state: r.STATE,
                     products: JSON.parse(r.PRODUCTS),
-                    restockOrderId: r.CUSTOMERID,
+                    customerId: r.CUSTOMERID,
                 }
                 resolve(order);
             });
@@ -482,14 +492,25 @@ class controlOrder {
 
     newInternalOrder(data) {
         return new Promise((resolve, reject) => {
-            const sql = 'INSERT INTO INTERNALORDER(ISSUEDATE, PRODUCTS, STATE, CUSTOMERID) VALUES(?, ?, "ISSUED", ?)';
-            const date = dayjs(data.issueDate).format('YYYY/MM/DD HH:MM') ;
-            this.db.run(sql, [date, JSON.stringify(data.products), data.customerId], (err) => {
+            const sql1 = "SELECT * FROM USER WHERE ID = ? AND TYPE = 'customer';"
+            this.db.all(sql1, [data.customerId], (err, rows) => {
                 if (err) {
+                    console.log(err)
                     reject({error:err, code:500});
                 }
-                resolve();
+                if(rows.length<1){
+                    reject({error:"No customer matches the Id", code:422});
+                }
+                const sql = 'INSERT INTO INTERNALORDER(ISSUEDATE, PRODUCTS, STATE, CUSTOMERID) VALUES(?, ?, "ISSUED", ?)';
+                const date = dayjs(data.issueDate).format('YYYY/MM/DD HH:mm') ;
+                this.db.run(sql, [date, JSON.stringify(data.products), data.customerId], (err) => {
+                    if (err) {
+                        reject({error:err, code:500});
+                    }
+                    resolve();
+                });
             });
+
         });
     }
 
@@ -503,7 +524,6 @@ class controlOrder {
                     console.log(err);
                     reject({error:err, code:500});
                 }
-                console.log(rows);
                 
                 if (rows.length < 1) {
                     reject({ error: 'no internal order associated to id', code:404});
