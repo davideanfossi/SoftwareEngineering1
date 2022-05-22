@@ -16,21 +16,33 @@ class skuService {
     }
 
     getSkus = async () => {
-        const Items = await this.dao.getItems();
-        let ItemsDTO = Items.map((r) => (
-            {
-            id: r.ID,                    
-            description: r.DESCRIPTION,
-            price: r.PRICE, 
-            SKUId: r.SKUID,
-            supplierId: r.SUPPLIERID,
+        let skus = [];
+        const ids = await this.dao.getSkuIds();
+        for (const id of ids) {
+            const sku = await this.dao.getSkuById(id);
+            skus.push(sku[0]);
         }
-        ));
-        return ItemsDTO;
+        return skus;
     }
 
-    getSkuById = async (id) => {           
+    getSku = async (id) => {           
         return await this.dao.getSkuById(id);
+    }
+
+    modifySku = async(id, sku) => {
+        return await this.dao.modifySku(id, sku);
+    }
+
+    getWeightVolume = async(id) => {
+        return await this.dao.getWeightVolume(id);
+    }
+
+    modifySkuPositon = async(id, position) => {
+        return await this.dao.modifySkuPositon(id, position);
+    }
+
+    updateOccupied = async(weight, volume, position, oldPosition) => {
+        return await this.dao.updateOccupied(weight, volume, position, oldPosition);
     }
 
     deleteSku = async (id) => {

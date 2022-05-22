@@ -11,18 +11,13 @@ const sku_service = new skuService(db)
 
 router.get('/skus', async (req, res) => {
     try {
-        let skus = [];
-        const ids = await db.getSkuIds();
-        for (const id of ids) {
-            const sku = await db.getSkuById(id);
-            skus.push(sku[0]);
-        }
+        const skus = await sku_service.getSkus();
         res.status(200).json(skus);
     } catch (err) {
         console.log(err);
         res.status(500).end();
     }
-})  // x
+})  
 
 router.get('/skus/:id', async (req, res) => {
 
@@ -30,11 +25,11 @@ router.get('/skus/:id', async (req, res) => {
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        const skus = await sku_service.getSkuById(req.params.id);
+        const skus = await sku_service.getSku(req.params.id);
         res.status(200).json(skus);
     } catch (err) {
         if (err == "not found")
-            res.status(404).json(err).end();
+            res.status(404).json({ error: `no SKU available associated to id` }).end();
         else
             res.status(500).end();
     }
@@ -238,7 +233,7 @@ router.put('/sku/:id', async (req, res) => {
     }
 
     try {
-        await db.modifySku(req.params.id, sku);
+        await sku_service.modifySku(req.params.id, sku);
         //modify position occupied fileds
         res.status(200).end()
     } catch (err) {
@@ -247,7 +242,7 @@ router.put('/sku/:id', async (req, res) => {
         else
             res.status(503).end()
     }
-}); // x
+}); 
 
 router.put('/sku/:id/position', async (req, res) => {
     if (!Number.isInteger(parseInt(req.params.id)))
@@ -266,9 +261,9 @@ router.put('/sku/:id/position', async (req, res) => {
 
     try {
 
-        data = await db.getWeightVolume(req.params.id);
-        await db.modifySkuPositon(req.params.id, position);
-        await db.updateOccupied(data[0], data[1], position, data[2]);
+        data = await sku_service.getWeightVolume(req.params.id);
+        await sku_service.modifySkuPositon(req.params.id, position);
+        await sku_service.updateOccupied(data[0], data[1], position, data[2]);
         res.status(200).end()
     } catch (err) {
         if (err == 'not found')
@@ -277,7 +272,7 @@ router.put('/sku/:id/position', async (req, res) => {
             console.log(err);
         res.status(503).json({ err }).end()
     }
-}); // x
+}); 
 
 router.put('/skuitems/:rfid', async (req, res) => {
     if (Object.keys(req.body).length === 0) {
