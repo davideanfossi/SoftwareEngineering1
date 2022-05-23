@@ -52,7 +52,7 @@ router.post('/newUser', async (req, res) => {
         user.name === '' || user.surname === '' || user.username === '' || user.type === '' || user.password === '' || user.password === undefined) {
         return res.status(422).json({ error: `Invalid user data` });
 
-    } else if (user.type === 'manager') {
+    }else if (user.type === 'manager') {
         return res.status(422).json({ error: `validation of request body failed or attempt to create manager or administrator accounts` });
     } else if (user.password.length < 8) {
         return res.status(422).json({ error: 'la password deve essere almeno di 8 caratteri' })
@@ -259,6 +259,7 @@ router.put('/users/:username', async (req, res) => {
 
     const rights = req.body;
 
+
     if (rights === undefined || rights.oldType === undefined || rights.newType === undefined ||
         rights.oldType === '' || rights.newType === '') {
 
@@ -315,7 +316,7 @@ router.delete('/users/:username/:type', async (req, res) => {
         res.status(204).end()
     } catch (err) {
         if (err === 'not found')
-            res.status(422).json({ error: `validation of username or of type failed or attempt to delete a manager/administrator` })
+            res.status(404).json({ error: `user not found` })
         else
             res.status(503).end()
     }
