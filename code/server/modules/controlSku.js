@@ -7,12 +7,12 @@ class controlSku {
             if (err) throw err;
         });
 
-        const sql = `PRAGMA foreign_keys=on;`;
-        this.db.run(sql, (err) => {
-            if (err) {
-                throw err;
-            }
-        });
+        // const sql = `PRAGMA foreign_keys=on;`;
+        // this.db.run(sql, (err) => {
+        //     if (err) {
+        //         throw err;
+        //     }
+        // });
     }
 
     //SKU
@@ -43,16 +43,15 @@ class controlSku {
     getSkuById(id) {
         return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM SKU, TEST_DESCRIPTOR AS TD WHERE SKU.ID = TD.ID_SKU AND SKU.ID = ?`;
+
             this.db.all(sql, [id], (err, rows) => {
                 if (err) {
                     reject(err);
                     return;
                 }
 
-                if (rows.length < 1){
+                if (rows.length == 0)
                     reject("not found");
-                    return;
-                }    
 
                 let testDescriptors = [];
                 rows.forEach(r => testDescriptors.push(r.ID));
@@ -70,7 +69,6 @@ class controlSku {
                         testDescriptors : testDescriptors
                      }
                 ));
-
                 resolve(sku);
             });
         });
@@ -110,6 +108,7 @@ class controlSku {
     modifySku(id, sku) {
         return new Promise((resolve, reject) => {
             const sql1 = "SELECT * FROM SKU WHERE ID = ?"
+
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
                     reject(err);
@@ -121,6 +120,7 @@ class controlSku {
             });
 
             const sql2 = "UPDATE SKU SET DESCRIPTION = ?, WEIGHT = ?, VOLUME = ?, NOTES = ?, AVAILABLE_QUANTITY = ?, PRICE = ? WHERE ID = ?"
+
             this.db.all(sql2, [sku.newDescription, sku.newWeight, sku.newVolume, sku.newNotes, sku.newAvailableQuantity, sku.newPrice, id], (err, rows) => {
 
                 if (err) {
@@ -237,14 +237,6 @@ class controlSku {
                     reject(err);
                     return;
                 }
-                // const SKUItem = rows.map((r) => (
-                //     {
-                //         RFID: r.RFID,
-                //         SKUId: r.SKUID,
-                //         Available: r.AVAILABLE,
-                //         DateOfStock: r.DATEOFSTOCK,
-                //     }
-                // ));
                 resolve(rows);
             });
         });
@@ -254,25 +246,12 @@ class controlSku {
         return new Promise((resolve, reject) => {
             const sql = "SELECT * FROM SKUITEM WHERE SKUID = ? AND AVAILABLE = 1"
             this.db.all(sql, [SKUId], (err, rows) => {
-
                 if (err) {
                     console.log(err);
                     reject(err);
                     return;
                 }
-                if (rows.length < 1)
-                reject('not found');
-
-                const info = rows.map((r) => (
-                    {
-                        RFID: r.RFID,
-                        SKUId: r.SKUID,
-                        Available: r.AVAILABLE,
-                        DateOfStock: r.DATEOFSTOCK,
-                    }
-                ));
-
-                resolve(info)
+                resolve(rows)
             })
         });
     }
@@ -287,18 +266,7 @@ class controlSku {
                     reject(err);
                     return;
                 }
-                if (rows.length < 1)
-                reject('not found');
-
-                const info = rows.map((r) => (
-                    {
-                        RFID: r.RFID,
-                        SKUId: r.SKUID,
-                        Available: r.AVAILABLE,
-                        DateOfStock: r.DATEOFSTOCK,
-                    }
-                ));
-                resolve(info)
+                resolve(rows)
             })
         });
     }
@@ -339,9 +307,6 @@ class controlSku {
                     reject(err);
                     return;
                 }
-
-                console.log(rows);
-
                 resolve('done');
             });
         });
@@ -418,7 +383,6 @@ class controlSku {
     getPositions() {
         return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM POSITION`;
-
             this.db.all(sql, [], (err, rows) => {
                 if (err) {
                     console.log(err);
@@ -430,9 +394,9 @@ class controlSku {
         });
     }
 
-    modifyPosition(positionid, data) {
+    modifyPosition(newPositionID, positionid, data) {
         return new Promise((resolve, reject) => {
-            const sql1 = "SELECT AISLEID, ROW, COL, MAXWEIGHT, MAXVOLUME, OCCUPIEDWEIGHT, OCCUPIEDVOLUME FROM POSITION WHERE POSITIONID = ?"
+            const sql1 = "SELECT POSITIONID, AISLEID, ROW, COL, MAXWEIGHT, MAXVOLUME, OCCUPIEDWEIGHT, OCCUPIEDVOLUME FROM POSITION WHERE POSITIONID = ?"
             this.db.all(sql1, [positionid], (err, rows) => {
 
                 if (err) {
@@ -444,17 +408,15 @@ class controlSku {
                     reject('not found');
             });
 
-            const sql2 = "UPDATE POSITION SET AISLEID = ?, ROW = ?, COL = ?, MAXWEIGHT = ?, MAXVOLUME = ?, OCCUPIEDWEIGHT = ?, OCCUPIEDVOLUME = ? WHERE POSITIONID = ?"
+            const sql2 = "UPDATE POSITION SET POSITIONID = ?, AISLEID = ?, ROW = ?, COL = ?, MAXWEIGHT = ?, MAXVOLUME = ?, OCCUPIEDWEIGHT = ?, OCCUPIEDVOLUME = ? WHERE POSITIONID = ?"
 
-            this.db.all(sql2, [data.newAisleID, data.newRow, data.newCol, data.newMaxWeight, data.newMaxVolume, data.newOccupiedWeight, data.newOccupiedVolume, positionid], (err, rows) => {
+            this.db.all(sql2, [newPositionID, data.newAisleID, data.newRow, data.newCol, data.newMaxWeight, data.newMaxVolume, data.newOccupiedWeight, data.newOccupiedVolume, positionid], (err, rows) => {
 
                 if (err) {
                     console.log(err);
                     reject(err);
                     return;
                 }
-
-                console.log(rows);
 
                 resolve('done');
             });
@@ -483,7 +445,7 @@ class controlSku {
         });
     }
 
-    modifyPositionID(oldpositionid, newpositionid) {
+    modifyPositionID(oldpositionid, newpositionid, aisleid, row, col) {
         return new Promise((resolve, reject) => {
             const sql1 = "SELECT POSITIONID FROM POSITION WHERE POSITIONID = ?"
 
@@ -497,20 +459,15 @@ class controlSku {
                 if (rows.length < 1)
                     reject('not found');
             });
-            let isleid = newpositionid.slice(0, 4);
-            let row = newpositionid.slice(4, 8);
-            let col = newpositionid.slice(8, 12);
             const sql2 = "UPDATE POSITION SET POSITIONID = ?, AISLEID = ?, ROW = ?, COL = ?  WHERE POSITIONID = ?"
 
-            this.db.all(sql2, [newpositionid, isleid, row, col, oldpositionid], (err, rows) => {
+            this.db.all(sql2, [newpositionid, aisleid, row, col, oldpositionid], (err, rows) => {
 
                 if (err) {
                     console.log(err);
                     reject(err);
                     return;
                 }
-
-                console.log(rows);
 
                 resolve('done');
             });
@@ -594,16 +551,7 @@ class controlSku {
                     reject(err);
                     return;
                 }
-                const Item = rows.map((r) => (
-                    {
-                        id: r.ID,                    
-                        description: r.DESCRIPTION,
-                        price: r.PRICE, 
-                        SKUId: r.SKUID,
-                        supplierId: r.SUPPLIERID,
-                    }
-                ));
-                resolve(Item);
+                resolve(rows);
             });
         });
     }
@@ -617,20 +565,7 @@ class controlSku {
                     reject(err);
                     return;
                 }
-                if (rows.length < 1)
-                reject('not found');
-
-                const info = rows.map((r) => (
-                    {
-                        id: r.ID,                    
-                        description: r.DESCRIPTION,
-                        price: r.PRICE, 
-                        SKUId: r.SKUID,
-                        supplierId: r.SUPPLIERID,
-                    }
-                ));
-
-                resolve(info)
+                resolve(rows)
             })
         });
     }
@@ -658,9 +593,6 @@ class controlSku {
                     reject(err);
                     return;
                 }
-
-                console.log(rows);
-
                 resolve('done');
             });
         });
@@ -679,7 +611,7 @@ class controlSku {
         });
     }
 
-    deleteAllPosition() {                        // ADDED
+    deleteAllItem() {                        // ADDED
         return new Promise((resolve, reject) => {
             const sql = "DELETE FROM ITEM"
             this.db.all(sql, [], (err, rows) => {
