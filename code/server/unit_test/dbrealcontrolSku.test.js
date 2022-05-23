@@ -70,9 +70,9 @@ async function testSKUItem(SKUItem) {
 
 
 describe("modify SKUItems", () => {
-    beforeEach(() => {
-        controller.deleteAllSKUItem();
-        controller.createSKUItem(SKUItem1post);
+    beforeEach(async () => {
+        await controller.deleteAllSKUItem();
+        await controller.createSKUItem(SKUItem1post);
     })
     describe("modify SKUItem data with success", () => {
         test('SKUItem', async () => {                                       // test 3
@@ -96,8 +96,8 @@ describe("modify SKUItems", () => {
 });
 
 describe("create SKUItems", () => {
-    beforeEach(() => {
-        sku_service.deleteAllSKUItem();
+    beforeEach(async () => {
+       await sku_service.deleteAllSKUItem();
     })
     describe("create SKUItem data", () => {
         test('SKUItem', async () => {                                           // test 4
@@ -134,8 +134,8 @@ describe("create SKUItems", () => {
 });
 
 describe("get SKUItemAvailable", () => {
-    beforeEach(() => {
-        controller.deleteAllSKUItem();
+    beforeEach(async () => {
+        await controller.deleteAllSKUItem();
 
     })
     test('test SKUItem passed', async () => {                                                  
@@ -236,8 +236,8 @@ async function testPosition(Position) {
 }
 
 describe("modify Positions", () => {
-    beforeEach(() => {
-        controller.deleteAllPosition();
+    beforeEach(async () => {
+        await controller.deleteAllPosition();
     })
     test('Positions modification success', async () => {                                       
         const newPositiondata = {
@@ -306,8 +306,8 @@ describe("modify Positions", () => {
 });
 
 describe("create Positions", () => {
-    beforeEach(() => {
-        sku_service.deleteAllPosition();
+    beforeEach(async () => {
+        await sku_service.deleteAllPosition();
     })
     test('Position with success', async () => {                                           
         const Position = {
@@ -370,8 +370,8 @@ describe("create Positions", () => {
 });
 
 describe("modify Positions ID", () => {
-    beforeEach(() => {
-        controller.deleteAllPosition();
+    beforeEach(async () => {
+        await controller.deleteAllPosition();
     })
     test('PositionID modification success', async () => {                                       
         const newPositioIDndata = {
@@ -483,8 +483,8 @@ async function testItem(Item) {
 }
 
 describe("modify Items", () => {
-    beforeEach(() => {
-        controller.deleteAllItem();
+    beforeEach(async() => {
+        await controller.deleteAllItem();
     })
     test('modify Item data with success', async () => {                                       // test 3
         const newSKUItemdata = {
@@ -521,8 +521,8 @@ describe("modify Items", () => {
 });
 
 describe("delete Items", () => {
-    beforeEach(() => {
-        sku_service.deleteAllItem();
+    beforeEach(async () => {
+        await sku_service.deleteAllItem();
     })
     test('delete Item empty', async () => {                                          
         let res = await sku_service.createItem(Item2);
