@@ -107,7 +107,7 @@ router.get('/skuitems/:rfid/testResults', async (req, res) => {
         res.status(422).json({ error: "rfid is not a number" }).end();
 
     try {
-        const testResultsList = await db.getTestResults(req.params.rfid);
+        const testResultsList = await service.getTestResults(req.params.rfid);
         res.status(200).json(testResultsList);
     } catch (err) {
         if (err == "not found")
@@ -124,7 +124,7 @@ router.get('/skuitems/:rfid/testResults/:id', async (req, res) => {
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        const testResult = await db.getTestResult(req.params.rfid, req.params.id);
+        const testResult = await service.getTestResult(req.params.rfid, req.params.id);
         res.status(200).json(testResult);
     } catch (err) {
         if (err == "not found")
@@ -146,14 +146,14 @@ router.post('/skuitems/testResult', async (req, res) => {
 
     try {
         await db.newTableTestResults();
-        await db.checkRfid(testResult.rfid);
-        await db.checkTestResult(testResult);
+        await service.checkRfid(testResult.rfid);
+        await service.checkTestResult(testResult);
     } catch (err) {
         return res.status(404).json({ error: `no sku item associated to rfid or no test descriptor associated to idTestDescriptor` });
     }
 
     try {
-        await db.createTestResult(testResult);
+        await service.createTestResult(testResult);
         return res.status(201).end();
     } catch (err) {
         res.status(500).json({ err }).end();
@@ -179,7 +179,7 @@ router.put('/skuitems/:rfid/testResult/:id', async (req, res) => {
     }
 
     try {
-        await db.modifyTestResult(req.params.rfid, req.params.id, testResult);
+        await service.modifyTestResult(req.params.rfid, req.params.id, testResult);
         res.status(200).end()
     } catch (err) {
         if (err = 'not found')
@@ -197,7 +197,7 @@ router.delete('/skuitems/:rfid/testResult/:id', async (req, res) => {
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        await db.deleteTestResult(req.params.rfid, req.params.id);
+        await service.deleteTestResult(req.params.rfid, req.params.id);
         res.status(204).end();
     } catch (err) {
         if (err == "not found")
