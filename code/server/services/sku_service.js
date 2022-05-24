@@ -54,6 +54,10 @@ class skuService {
     deleteAllSku = async () => {
         const res = await this.dao.deleteAllSku();
     }
+
+    dropSKUTable = async () =>{
+        await this.dao.dropSKUTable();
+    }
     
     
     // SKUItem
@@ -79,12 +83,19 @@ class skuService {
             else
                 throw {error: "Invalid DateOfStock", code:422};                 
         }
+        if(SKUItem.RFID.length !== 32)
+            throw {error: "Invalid RFID length", code:422};
+        if(!(SKUItem.RFID.match(/^[0-9]+$/) != null))
+            throw {error: "Invalid RFID format", code:422};
         if(!Number.isInteger(SKUItem.SKUId))
             throw {error: "Invalid SKUId", code:422}; 
         if(SKUItem.SKUId < 0)
             throw {error: "Invalid SKUId", code:422}; 
         if(!(typeof SKUItem.RFID === 'string'))
-            throw {error: "Invalid RFID", code:422}; 
+            throw {error: "Invalid RFID", code:422};
+        let Skus = await this.dao.getSkuIds();
+        if (!Skus.includes(SKUItem.SKUId))
+            throw {error: "SKU not found", code:404}; 
         return await this.dao.createSKUItem(SKUItem);   
     }
 
@@ -154,6 +165,14 @@ class skuService {
             else
                 throw {error: "Invalid newDateOfStock", code:422};                 
         } 
+        if(data.newRFID.length !== 32)
+            throw {error: "Invalid newRFID length", code:422};
+        if(!(data.newRFID.match(/^[0-9]+$/) != null))
+            throw {error: "Invalid newRFID format", code:422};
+        if(rfid.length !== 32)
+            throw {error: "Invalid newRFID length", code:422};
+        if(!(rfid.match(/^[0-9]+$/) != null))
+            throw {error: "Invalid newRFID format", code:422};
         if(!Number.isInteger(data.newAvailable))
             throw {error: "Invalid newAvailable", code:422}; 
         else if(data.newAvailable > 1 || data.newAvailable < 0)
@@ -314,6 +333,9 @@ class skuService {
             throw {error: "Invalid supplierId", code:422}; 
         else if (Item.supplierId < 0)
             throw {error: "Invalid supplierId", code:422};
+        let Skus = await this.dao.getSkuIds();
+        if (!Skus.includes(Item.SKUId))
+            throw {error: "SKU not found", code:404};
         let res = await this.dao.checkExisting(Item);
         if (res.length > 0)
             throw {error: "supplier already sells an item with the same SKUId or same ID", code:422};

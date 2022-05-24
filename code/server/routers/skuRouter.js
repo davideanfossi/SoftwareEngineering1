@@ -374,6 +374,15 @@ router.delete('/skus/:id', async (req, res) => {
     }
 });
 
+router.delete('/deleteSKUTable', async (req, res) => {
+    try {
+        await db.dropSKUTable();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
+
 router.delete('/deleteSKUItemTable', async (req, res) => {
     try {
         await db.dropSKUItemTable();

@@ -28,11 +28,32 @@ const SKUItem2get = {
     DateOfStock:"2021/11/29 12:35"
 }
 
+const SKU1 ={
+    description : "another sku",
+    weight : 101,
+    volume : 60,
+    notes : "second SKU",
+    availableQuantity : 55,
+    price : 10.99,
+}
+
+const SKU2 ={
+    description : "another sku",
+    weight : 101,
+    volume : 60,
+    notes : "second SKU",
+    availableQuantity : 55,
+    price : 10.99,
+}
 
 describe("get SKUItem", () => {
     beforeEach(async () => {
         await controller.newTableSKUItem();
         await controller.deleteAllSKUItem();
+        await controller.dropSKUTable();
+        await controller.newTableSku();
+        await controller.createSku(SKU1);
+        await controller.createSku(SKU2);
         await controller.createSKUItem({    
             RFID:"12345678901234567890123456789014",
             SKUId:1,
@@ -59,6 +80,7 @@ describe("get SKUItem", () => {
 async function testSKUItem(SKUItem) {
     test('get SKUItem', async () => {
         let res = await sku_service.getSKUItem(SKUItem.RFID);
+        
         expect(res[0]).toEqual({
             RFID: SKUItem.RFID,
             SKUId: SKUItem.SKUId,
@@ -72,6 +94,10 @@ async function testSKUItem(SKUItem) {
 describe("modify SKUItems", () => {
     beforeEach(async () => {
         await controller.deleteAllSKUItem();
+        await controller.dropSKUTable();
+        await controller.newTableSku();
+        await controller.createSku(SKU1);
+        await controller.createSku(SKU2);
         await controller.createSKUItem(SKUItem1post);
     })
     describe("modify SKUItem data with success", () => {
@@ -97,7 +123,11 @@ describe("modify SKUItems", () => {
 
 describe("create SKUItems", () => {
     beforeEach(async () => {
-       await sku_service.deleteAllSKUItem();
+       await controller.deleteAllSKUItem();
+       await controller.dropSKUTable();
+       await controller.newTableSku();
+       await controller.createSku(SKU1); 
+       await controller.createSku(SKU2);
     })
     describe("create SKUItem data", () => {
         test('SKUItem', async () => {                                           // test 4
@@ -136,6 +166,10 @@ describe("create SKUItems", () => {
 describe("get SKUItemAvailable", () => {
     beforeEach(async () => {
         await controller.deleteAllSKUItem();
+        await controller.dropSKUTable();
+        await controller.newTableSku();
+        await controller.createSku(SKU1);
+        await controller.createSku(SKU2);
 
     })
     test('test SKUItem passed', async () => {                                                  
@@ -447,6 +481,10 @@ describe("get Item", () => {
     beforeEach(async () => {
         await controller.newTableItem();
         await controller.deleteAllItem();
+        await controller.dropSKUTable();
+        await controller.newTableSku();
+        await controller.createSku(SKU1);
+        await controller.createSku(SKU2);
         await controller.createItem({    
             id : 12,
             description : "a new item",
@@ -485,6 +523,10 @@ async function testItem(Item) {
 describe("modify Items", () => {
     beforeEach(async() => {
         await controller.deleteAllItem();
+        await controller.dropSKUTable();
+        await controller.newTableSku();
+        await controller.createSku(SKU1);
+        await controller.createSku(SKU2);
     })
     test('modify Item data with success', async () => {                                       // test 3
         const newSKUItemdata = {
@@ -523,6 +565,10 @@ describe("modify Items", () => {
 describe("delete Items", () => {
     beforeEach(async () => {
         await sku_service.deleteAllItem();
+        await controller.dropSKUTable();
+        await controller.newTableSku();
+        await controller.createSku(SKU1);
+        await controller.createSku(SKU2);
     })
     test('delete Item empty', async () => {                                          
         let res = await sku_service.createItem(Item2);

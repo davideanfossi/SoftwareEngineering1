@@ -48,8 +48,7 @@ class controlSku {
                     reject(err);
                     return;
                 }
-
-                if (rows.length < 1){
+                 if (rows.length < 1){
                     reject("not found");
                     return;
                 }    
@@ -69,7 +68,7 @@ class controlSku {
                         testDescriptors : testDescriptors
                      }
                 ));
-
+           
                 resolve(sku);
             });
         });
@@ -213,6 +212,18 @@ class controlSku {
         });
     }
 
+    dropSKUTable() {
+        return new Promise((resolve, reject) => {
+            const sql = 'DROP TABLE IF EXISTS SKU';
+            this.db.run(sql, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(this.lastID);
+            });
+        });
+    }
    
     // SKUItem
 
