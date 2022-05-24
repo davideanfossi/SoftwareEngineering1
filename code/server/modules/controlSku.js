@@ -7,12 +7,12 @@ class controlSku {
             if (err) throw err;
         });
 
-        // const sql = `PRAGMA foreign_keys=on;`;
-        // this.db.run(sql, (err) => {
-        //     if (err) {
-        //         throw err;
-        //     }
-        // });
+        const sql = `PRAGMA foreign_keys=on;`;
+        this.db.run(sql, (err) => {
+            if (err) {
+                throw err;
+            }
+        });
     }
 
     //SKU
@@ -43,19 +43,19 @@ class controlSku {
     getSkuById(id) {
         return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM SKU, TEST_DESCRIPTOR AS TD WHERE SKU.ID = TD.ID_SKU AND SKU.ID = ?`;
-
             this.db.all(sql, [id], (err, rows) => {
                 if (err) {
                     reject(err);
                     return;
                 }
 
-                if (rows.length == 0)
+                if (rows.length < 1){
                     reject("not found");
+                    return;
+                }    
 
                 let testDescriptors = [];
                 rows.forEach(r => testDescriptors.push(r.ID));
-
                 let a = [rows[0]];
                 const sku = a.map((r) => (
                     {
@@ -69,6 +69,7 @@ class controlSku {
                         testDescriptors : testDescriptors
                      }
                 ));
+
                 resolve(sku);
             });
         });
@@ -594,6 +595,32 @@ class controlSku {
                     return;
                 }
                 resolve('done');
+            });
+        });
+    }
+
+    checkExisting(data) {
+        return new Promise((resolve, reject) => {
+            const sql1 = "SELECT * FROM ITEM WHERE SUPPLIERID = ?"
+            this.db.all(sql1, [data.supplierId], (err, rows) => {
+
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+
+            });
+            const sql2 = "SELECT * FROM ITEM WHERE ID = ? OR SKUID = ?"
+
+            this.db.all(sql2, [data.id, data.SKUId], (err, rows) => {
+
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                resolve(rows);
             });
         });
     }

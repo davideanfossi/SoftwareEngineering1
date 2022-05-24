@@ -11,18 +11,13 @@ const sku_service = new skuService(db)
 
 router.get('/skus', async (req, res) => {
     try {
-        let skus = [];
-        const ids = await db.getSkuIds();
-        for (const id of ids) {
-            const sku = await db.getSkuById(id);
-            skus.push(sku[0]);
-        }
+        const skus = await sku_service.getSkus();
         res.status(200).json(skus);
     } catch (err) {
         console.log(err);
         res.status(500).end();
     }
-})  // x
+})  
 
 router.get('/skus/:id', async (req, res) => {
 
@@ -30,11 +25,11 @@ router.get('/skus/:id', async (req, res) => {
         res.status(422).json({ error: "id is not a number" }).end();
 
     try {
-        const skus = await sku_service.getSkuById(req.params.id);
+        const skus = await sku_service.getSku(req.params.id);
         res.status(200).json(skus);
     } catch (err) {
         if (err == "not found")
-            res.status(404).json(err).end();
+            res.status(404).json({ error: `no SKU available associated to id` }).end();
         else
             res.status(500).end();
     }
@@ -204,7 +199,6 @@ router.post('/item', async (req, res) => {
         await sku_service.newTableItem();
         await sku_service.createItem(Item);
         return res.status(201).end();
-
     } catch (err) {
         if(err.code === 422)
             res.status(422).json({error: err.error});
@@ -229,37 +223,33 @@ router.put('/sku/:id', async (req, res) => {
     }
 
     try {
-        await db.modifySku(req.params.id, sku);
+        await sku_service.modifySku(req.params.id, sku);
         //modify position occupied fileds
         res.status(200).end()
     } catch (err) {
-        if (err =='not found')
+        if (err = 'not found')
             res.status(404).json({ error: `wrong id` })
         else
             res.status(503).end()
     }
-}); // x
-
+}); 
 router.put('/sku/:id/position', async (req, res) => {
     if (!Number.isInteger(parseInt(req.params.id)))
         res.status(422).json({ error: "id is not a number" }).end();
-
     if (Object.keys(req.body).length === 0) {
         return res.status(422).json({ error: `Empty body request` });
     }
-
     let position = req.body;
     let data;
-
     if (position === undefined || position.position === undefined || position.position == '') {
         return res.status(422).json({ error: `Invalid position data` });
     }
 
     try {
 
-        data = await db.getWeightVolume(req.params.id);
-        await db.modifySkuPositon(req.params.id, position);
-        await db.updateOccupied(data[0], data[1], position, data[2]);
+        data = await sku_service.getWeightVolume(req.params.id);
+        await sku_service.modifySkuPositon(req.params.id, position);
+        await sku_service.updateOccupied(data[0], data[1], position, data[2]);
         res.status(200).end()
     } catch (err) {
         if (err == 'not found')
@@ -268,7 +258,7 @@ router.put('/sku/:id/position', async (req, res) => {
             console.log(err);
         res.status(503).json({ err }).end()
     }
-}); // x
+}); 
 
 router.put('/skuitems/:rfid', async (req, res) => {
     if (Object.keys(req.body).length === 0) {
@@ -354,7 +344,7 @@ router.put('/item/:id', async (req, res) => {
         return res.status(422).json({ error: `Invalid data` });
 
     try {
-        await sku_service.modifyItem(req.params.id, data);
+        await sku_service.modifyItem(id, data);
         res.status(200).end()
     } catch (err) {
         if (err === 'not found')
@@ -391,7 +381,16 @@ router.delete('/deleteSKUItemTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-}); // x
+}); 
+
+router.delete('/deleteAllSKUItem', async (req, res) => {                // PER TEST
+    try {
+        await db.deleteAllSKUItem();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
 
 router.delete('/deletePositionTable', async (req, res) => {
     try {
@@ -400,7 +399,16 @@ router.delete('/deletePositionTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-}); // x
+}); 
+
+router.delete('/deleteAllPosition', async (req, res) => {                // PER TEST
+    try {
+        await db.deleteAllPosition();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
 
 router.delete('/deleteItemTable', async (req, res) => {
     try {
@@ -409,7 +417,16 @@ router.delete('/deleteItemTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-}); // x
+}); 
+
+router.delete('/deleteAllItem', async (req, res) => {                // PER TEST
+    try {
+        await db.deleteAllItem();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
 
 router.delete('/skuitems/:rfid', async (req, res) => {
     const rfid = req.params.rfid;
@@ -420,6 +437,8 @@ router.delete('/skuitems/:rfid', async (req, res) => {
         await sku_service.deleteSKUItem(rfid);
         res.status(204).end()
     } catch (err) {
+        if(err.code === 422)
+            res.status(422).json({error: err.error});
         res.status(503).end()
     }
 });
@@ -433,6 +452,8 @@ router.delete('/position/:positionID', async (req, res) => {
         await sku_service.deletePosition(positionID);
         res.status(204).end()
     } catch (err) {
+        if(err.code === 422)
+            res.status(422).json({error: err.error});
         res.status(503).end()
     }
 });
@@ -446,6 +467,8 @@ router.delete('/items/:id', async (req, res) => {
         await sku_service.deleteItem(id);
         res.status(204).end()
     } catch (err) {
+        if(err.code === 422)
+            res.status(422).json({error: err.error});
         res.status(503).end()
     }
 }); 

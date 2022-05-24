@@ -38,8 +38,8 @@ class TestService {
     }
 
     createTestDescriptor = async (data) => {
-        const lastId = await this.dao.createTestDescriptor(data);
-        return lastId;
+        const res = await this.dao.createTestDescriptor(data);
+        return res;
     }
 
     modifyTestDescriptor = async (id, newTestDescriptor) => {
