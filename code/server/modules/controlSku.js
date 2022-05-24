@@ -598,6 +598,32 @@ class controlSku {
         });
     }
 
+    checkExisting(data) {
+        return new Promise((resolve, reject) => {
+            const sql1 = "SELECT * FROM ITEM WHERE SUPPLIERID = ?"
+            this.db.all(sql1, [data.supplierId], (err, rows) => {
+
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+
+            });
+            const sql2 = "SELECT * FROM ITEM WHERE ID = ? OR SKUID = ?"
+
+            this.db.all(sql2, [data.id, data.SKUId], (err, rows) => {
+
+                if (err) {
+                    console.log(err);
+                    reject(err);
+                    return;
+                }
+                resolve(rows);
+            });
+        });
+    }
+
     deleteItem(id) {
         return new Promise((resolve, reject) => {
             const sql = "DELETE FROM ITEM WHERE ID = ? "
