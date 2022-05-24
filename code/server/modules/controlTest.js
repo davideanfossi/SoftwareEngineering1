@@ -117,7 +117,7 @@ class controlTest {
             this.db.run(sql, [data.name, data.procedureDescription, data.idSKU], (err) => {
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject("no sku associated idSKU");
                     return;
                 }
                 resolve(this.lastID);
@@ -136,7 +136,7 @@ class controlTest {
                 }
 
                 if (rows.length < 1)
-                    reject('not found');             
+                    reject('no test descriptor associated id or no sku associated to IDSku');             
             });
 
             const sql2 = "UPDATE TEST_DESCRIPTOR SET NAME = ?, PROCEDURE_DESCRIPTION = ?, ID_SKU = ? WHERE ID = ?"
@@ -144,7 +144,7 @@ class controlTest {
 
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject("no test descriptor associated id or no sku associated to IDSku");
                     return;
                 }
 
