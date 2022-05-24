@@ -54,7 +54,7 @@ function testGetSupplier(){
 function testGetUsers(){
     test('get user', async () => {
 
-        await db.dropContentUser();
+        
         const user = { username: 'john.snow@supplier.ezwh.com', name: 'John', surname: "Snow", password: "ciao1234", type: "supplier" }
         await db.createUser(user);
         
@@ -75,7 +75,7 @@ function testGetUsers(){
 function testNewUser(username, name, surname, password, type) {
 
     test('create new user', async () => {
-        await db.dropContentUser();
+        
         const user = {username: username, name: name, surname: surname, password: password, type: type}
         await db.createUser(user);
         
@@ -90,7 +90,7 @@ function testNewUser(username, name, surname, password, type) {
     });
 
    test('create new user with bad type', async () => {
-        await db.dropContentUser();
+       
         const user = {username: username, name: name, surname: surname, password: password, type: 'pippo'}
 
         try{
