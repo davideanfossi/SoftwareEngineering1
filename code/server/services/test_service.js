@@ -102,8 +102,8 @@ class TestService {
         return res;
     }
 
-    deleteTestResult = async (rfid, id) => {
-        const res = await this.dao.deleteTestResult(rfid, id);
+    deleteTestResult = async (id) => {
+        const res = await this.dao.deleteTestResult(id);
         return res;
     }
 

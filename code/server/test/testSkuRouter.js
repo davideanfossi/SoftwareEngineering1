@@ -6,10 +6,22 @@ chai.should();
 const app = require('../server');
 var agent = chai.request.agent(app);
 
+const SKU ={
+    description : "another sku",
+    weight : 101,
+    volume : 60,
+    notes : "second SKU",
+    availableQuantity : 55,
+    price : 10.99,
+}
+
 describe('test SKUItem apis', () => {
 
     beforeEach(async () => {
         await agent.delete('/api/deleteAllSKUItem');
+        await agent.delete('/api/deleteSKUTable');
+        await agent.post('/api/sku')
+        .send(SKU)
     })
 
     deleteAllSKUItem(204);
@@ -20,15 +32,15 @@ describe('test SKUItem apis', () => {
     getSKUItem(200, "12345678901234567890123456789015", 1, "2021/11/29 12:30")
     getSKUItemsAvailable(200, "12345678901234567890123456789015", 1, "2021/11/29 12:30")
 
-    // // POST
+    // // // POST
     createSKUItem(201, "12345678901234567890123456789015", 1, "2021/11/29 12:30");
 
 
-    // // PUT - DEL
+    // // // PUT - DEL
     modifySKUItem(200, "12345678901234567890123456789015", 1, 1, "2021/11/29 12:30");
     deleteSKUItem(204, "12345678901234567890123456789015", 1, "2021/11/29 12:30");
 
-    // // <----- WRONG CASE ----->
+    // // // <----- WRONG CASE ----->
     createSKUItem(422, "12345678901234567890123456789015", -3, "2021/11/29 12:30");
     createSKUItem(422, "12345678901234567890123456789015", 2, "2023/11/70 12:30");
     
@@ -66,7 +78,7 @@ function getSKUItems(expectedHTTPStatus, RFID, SKUId, DateOfStock) {
                         done();
                     });
             });
-    });
+        });
 }
 
 function getSKUItemsAvailable(expectedHTTPStatus, RFID, SKUId, DateOfStock) {
@@ -520,12 +532,15 @@ describe('test Item apis', () => {
 
     beforeEach(async () => {
         await agent.delete('/api/deleteAllItem');
+        await agent.delete('/api/deleteSKUTable');
+        await agent.post('/api/sku')
+        .send(SKU)
     })
 
     deleteAllItem(204);
 
     // <----- HAPPY CASE ----->
-    // GET
+    //GET
     getItems(200, 12, "a new item", 10.99, 1, 2)
     getItem(200, 12, "a new item", 10.99, 1, 2)
 
