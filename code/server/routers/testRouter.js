@@ -96,8 +96,8 @@ router.delete('/testDescriptor/:id', async (req, res) => {
         await service.deleteTestDescriptor(req.params.id);
         res.status(204).end();
     } catch (err) {
-        if (err == "not found")
-            res.status(422).json({ error: "id not found" }).end();
+        if (err == "validation of id failed")
+            res.status(422).json({ error: "validation of id failed" }).end();
         else
             res.status(503).end();
     }
