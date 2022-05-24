@@ -10,7 +10,7 @@ describe('test restock order services', () => {
         await service.newTableRestockOrder();
     });
 
-    test('create and retrive an order then delete it', async () => {
+    test('create an order', async () => {
         const sentData = {
             "issueDate":"2021/11/29 09:33",
             "products": [{"SKUId":12,"description":"a product","price":10.99,"qty":30},
@@ -34,8 +34,18 @@ describe('test restock order services', () => {
         expect(res).toEqual(retOrders);
         res = await service.getRestockOrders()
         expect(res).toEqual(retOrders);
+    });
+
+    test('delete an order', async () => {
+        const sentData = {
+            "issueDate":"2021/11/29 09:33",
+            "products": [{"SKUId":12,"description":"a product","price":10.99,"qty":30},
+            {"SKUId":180,"description":"another product","price":11.99,"qty":20}],
+            "supplierId" : 7
+        }
+        await service.newRestockOrder(sentData);
         await service.deleteRestockOrder(1);
-        res = await service.getRestockOrders()
+        let res = await service.getRestockOrders()
         expect(res).toEqual([]);
     });
 
@@ -75,8 +85,6 @@ describe('test restock order services', () => {
         ]
         res = await service.getIssuedRestockOrders()
         expect(res).toEqual(retOrders);
-
-
     });
 
     test('fail to modify an order by its ID', async () => {
@@ -113,6 +121,16 @@ describe('test restock order services', () => {
         await service.modifyRestockOrderState(1,{'newState':'DELIVERED'})
         const res = await service.getSkuItemsByRestockOrder(1);
         expect(res).toEqual(newSKU.skuItems)
+    });
+
+    test('try to modify note with wrong ID', async () => {
+        const sentData = {
+            "issueDate":"2021/11/29 09:33",
+            "products": [{"SKUId":12,"description":"a product","price":10.99,"qty":30},
+            {"SKUId":180,"description":"another product","price":11.99,"qty":20}],
+            "supplierId" : 7
+        }
+        await service.newRestockOrder(sentData);
         try {
             res = await service.modifyRestockOrderNote('B',{"transportNote":{"deliveryDate":"2021/12/29"}});
         } catch (error) {

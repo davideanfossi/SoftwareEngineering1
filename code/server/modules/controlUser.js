@@ -9,6 +9,19 @@ class controlUser {
 
     }
 
+    dropSequence() {
+        return new Promise((resolve, reject) => {
+            const sql = 'DELETE FROM sqlite_sequence';
+            this.db.run(sql, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve('eliminata con successo')
+            });
+        });
+    }
+
     dropContentUser() {
         return new Promise((resolve, reject) => {
             const sql = 'DELETE FROM USER';
@@ -41,6 +54,10 @@ class controlUser {
             const sql = 'INSERT INTO USER(USERNAME, NAME, SURNAME, TYPE, PASSWORD) VALUES(?, ?, ?, ?, ?)';
             this.db.run(sql, [data.username, data.name, data.surname, data.type, data.password], (err) => {
                 if (err) {
+
+                    if(err.code === 'SQLITE_CONSTRAINT')
+                        reject(err.code)
+                    
                     reject(err);
                     return;
                 }
@@ -110,7 +127,7 @@ class controlUser {
                     if (rows.length > 0)
                         reject('user already exist');
                     else
-                        resolve(true);
+                        resolve('done');
                 }else{
                     if (rows.length > 0)
                         resolve('done')
@@ -147,7 +164,6 @@ class controlUser {
             this.db.all(sql, [data.username, data.password, type], (err, rows) => {
 
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -168,23 +184,11 @@ class controlUser {
 
     modifyUserRights(username, rights) {
         return new Promise((resolve, reject) => {
-            const sql1 = "SELECT USERNAME, TYPE FROM USER WHERE USERNAME = ? AND TYPE = ?"
 
-            this.db.all(sql1, [username, rights.oldType], (err, rows) => {
+            
+            const sql1 = "UPDATE USER SET TYPE = ? WHERE USERNAME = ? AND TYPE = ?"
 
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                    return;
-                }
-
-                if (rows.length < 1)
-                    reject('not found');
-            });
-
-            const sql2 = "UPDATE USER SET TYPE = ? WHERE USERNAME = ? AND TYPE = ?"
-
-            this.db.all(sql2, [rights.newType, username, rights.oldType], (err, rows) => {
+            this.db.all(sql1, [rights.newType, username, rights.oldType], (err) => {
 
                 if (err) {
                     console.log(err);
