@@ -199,7 +199,6 @@ router.post('/item', async (req, res) => {
         await sku_service.newTableItem();
         await sku_service.createItem(Item);
         return res.status(201).end();
-
     } catch (err) {
         if(err.code === 422)
             res.status(422).json({error: err.error});
@@ -345,7 +344,7 @@ router.put('/item/:id', async (req, res) => {
         return res.status(422).json({ error: `Invalid data` });
 
     try {
-        await sku_service.modifyItem(req.params.id, data);
+        await sku_service.modifyItem(id, data);
         res.status(200).end()
     } catch (err) {
         if (err === 'not found')
@@ -382,7 +381,16 @@ router.delete('/deleteSKUItemTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-}); // x
+}); 
+
+router.delete('/deleteAllSKUItem', async (req, res) => {                // PER TEST
+    try {
+        await db.deleteAllSKUItem();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
 
 router.delete('/deletePositionTable', async (req, res) => {
     try {
@@ -391,7 +399,16 @@ router.delete('/deletePositionTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-}); // x
+}); 
+
+router.delete('/deleteAllPosition', async (req, res) => {                // PER TEST
+    try {
+        await db.deleteAllPosition();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
 
 router.delete('/deleteItemTable', async (req, res) => {
     try {
@@ -400,7 +417,16 @@ router.delete('/deleteItemTable', async (req, res) => {
     } catch (err) {
         res.status(500).end();
     }
-}); // x
+}); 
+
+router.delete('/deleteAllItem', async (req, res) => {                // PER TEST
+    try {
+        await db.deleteAllItem();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
 
 router.delete('/skuitems/:rfid', async (req, res) => {
     const rfid = req.params.rfid;
@@ -411,6 +437,8 @@ router.delete('/skuitems/:rfid', async (req, res) => {
         await sku_service.deleteSKUItem(rfid);
         res.status(204).end()
     } catch (err) {
+        if(err.code === 422)
+            res.status(422).json({error: err.error});
         res.status(503).end()
     }
 });
@@ -424,6 +452,8 @@ router.delete('/position/:positionID', async (req, res) => {
         await sku_service.deletePosition(positionID);
         res.status(204).end()
     } catch (err) {
+        if(err.code === 422)
+            res.status(422).json({error: err.error});
         res.status(503).end()
     }
 });
@@ -437,6 +467,8 @@ router.delete('/items/:id', async (req, res) => {
         await sku_service.deleteItem(id);
         res.status(204).end()
     } catch (err) {
+        if(err.code === 422)
+            res.status(422).json({error: err.error});
         res.status(503).end()
     }
 }); 

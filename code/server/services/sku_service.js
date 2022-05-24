@@ -81,12 +81,16 @@ class skuService {
         }
         if(!Number.isInteger(SKUItem.SKUId))
             throw {error: "Invalid SKUId", code:422}; 
+        if(SKUItem.SKUId < 0)
+            throw {error: "Invalid SKUId", code:422}; 
         if(!(typeof SKUItem.RFID === 'string'))
             throw {error: "Invalid RFID", code:422}; 
         return await this.dao.createSKUItem(SKUItem);   
     }
 
     getSKUItem = async (RFID) => {  
+        if(!(typeof RFID === 'string'))
+            throw {error: "Invalid RFID", code:422}; 
         const SKUItem = await this.dao.getSKUItem(RFID);
         if (SKUItem.length < 1)
             throw {error: "not found", code:404};
@@ -155,11 +159,15 @@ class skuService {
         else if(data.newAvailable > 1 || data.newAvailable < 0)
             throw {error: "Invalid newAvailable", code:422}; 
         if(!(typeof data.newRFID === 'string'))
+            throw {error: "Invalid newRFID", code:422}; 
+        if(!(typeof rfid === 'string'))
             throw {error: "Invalid RFID", code:422}; 
         return await this.dao.modifySKUItem(rfid, data)
     }
 
     deleteSKUItem = async (rfid) => { 
+        if(!(typeof rfid === 'string'))
+            throw {error: "Invalid RFID", code:422}; 
         const res = await this.dao.deleteSKUItem(rfid);
         return res;
     }
@@ -306,6 +314,9 @@ class skuService {
             throw {error: "Invalid supplierId", code:422}; 
         else if (Item.supplierId < 0)
             throw {error: "Invalid supplierId", code:422};
+        let res = await this.dao.checkExisting(Item);
+        if (res.length > 0)
+            throw {error: "supplier already sells an item with the same SKUId or same ID", code:422};
         return await this.dao.createItem(Item);
     }
 
@@ -346,12 +357,13 @@ class skuService {
     modifyItem = async (id, data) => {
         if(!Number.isInteger(id))
             throw {error: "Invalid id", code:422}; 
-        else if (id < 0)
+        if (id < 0)
             throw {error: "Invalid id", code:422};
         if(!(typeof data.newPrice === 'number'))
             throw {error: "Invalid newPrice", code:422}; 
         else if (data.newPrice < 0)
             throw {error: "Invalid newPrice", code:422};    
+        
         const res = await this.dao.modifyItem(id, data);
         return res;
     }
