@@ -38,8 +38,8 @@ class TestService {
     }
 
     createTestDescriptor = async (data) => {
-        const lastId = await this.dao.createTestDescriptor(data);
-        return lastId;
+        const res = await this.dao.createTestDescriptor(data);
+        return res;
     }
 
     modifyTestDescriptor = async (id, newTestDescriptor) => {
@@ -102,8 +102,8 @@ class TestService {
         return res;
     }
 
-    deleteTestResult = async (rfid, id) => {
-        const res = await this.dao.deleteTestResult(rfid, id);
+    deleteTestResult = async (id) => {
+        const res = await this.dao.deleteTestResult(id);
         return res;
     }
 

@@ -7,12 +7,12 @@ class controlSku {
             if (err) throw err;
         });
 
-        // const sql = `PRAGMA foreign_keys=on;`;
-        // this.db.run(sql, (err) => {
-        //     if (err) {
-        //         throw err;
-        //     }
-        // });
+        const sql = `PRAGMA foreign_keys=on;`;
+        this.db.run(sql, (err) => {
+            if (err) {
+                throw err;
+            }
+        });
     }
 
     //SKU

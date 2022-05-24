@@ -7,25 +7,20 @@ class UserService {
 
     createUser = async (data) => {
 
-        try{
-
+        try {
             await this.checkUser(data, 'newUser');
-
-        }catch (err){
+        } catch (err) {
             throw err;
         }
-        
 
-        
-        
-        const lastId = await this.dao.createUser(data);
-        return lastId;
+
+        await this.dao.createUser(data);
+        return 'done';
     }
 
     getUsers = async () => {
         const users = await this.dao.getUsers();
 
-        console.log(users);
         let usersDTO = users.map((user) => ({
 
             id: user.ID,
@@ -85,6 +80,11 @@ class UserService {
 
     deleteAll = async () => {
         const res = await this.dao.dropContentUser();
+        return res;
+    }
+
+    dropSequence = async () => {
+        const res = await this.dao.dropSequence();
         return res;
     }
 }

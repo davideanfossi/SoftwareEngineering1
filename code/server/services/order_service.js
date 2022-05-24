@@ -14,7 +14,7 @@ class OrderService {
             const orders = await this.dao.getRestockOrders();
             return orders;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -23,40 +23,30 @@ class OrderService {
             const orders = await this.dao.getIssuedRestockOrders();
             return orders;
         } catch (error) {
-            return error
+            throw error
         }
 
     }
 
     getRestockOrder = async (id) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
         }
         try {
             const orders = await this.dao.getRestockOrder(id);
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.SUPPLIERID,
-                    transportNote: JSON.parse(r.TRANSPORTNOTE),
-                    skuItems: JSON.parse(r.SKUITEMS)
-                }
-            ));
+            const orderDTO = orders[0];
             return orderDTO;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     getSkuItemsByRestockOrder = async (id) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -80,7 +70,7 @@ class OrderService {
             ));
             return itemsDTO;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -89,7 +79,7 @@ class OrderService {
             await this.dao.newTableRestockOrder();
             return ;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -101,20 +91,20 @@ class OrderService {
         if(!dayjs(date).isValid()){
             throw {error: "Invalid date!", code:422};
         }
-        if(!Number.isInteger(body.supplierId)){
+        if(Number.isNaN(body.supplierId)){
             throw {error: "Invalid supplierId!", code:422};
         }
         try {
             await this.dao.newRestockOrder(body);
             return ;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     modifyRestockOrderState = async (id, body) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -122,7 +112,7 @@ class OrderService {
         if (body === undefined || body.newState === undefined) {
             throw { error: `Invalid body data`, code:422};
         }
-        const states = ['ISSUED', 'DELIVERY', 'DELIVERED', 'TESTED', 'COMPLETEDRETURN', 'COMPLETED',null]
+        const states = ['ISSUED', 'DELIVERY', 'DELIVERED', 'TESTED', 'COMPLETEDRETURN', 'COMPLETED']
         if(!states.includes(body.newState.toUpperCase())){
             throw {error: `Invalid state`, code:422};
         }
@@ -130,13 +120,13 @@ class OrderService {
             await this.dao.modifyRestockOrderState(id, body.newState);
             return;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     modifyRestockOrderSKUs = async (id, body) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -145,19 +135,19 @@ class OrderService {
             throw { error: `Invalid body data`, code:422};
         }
         if (body.skuItems.length<1){
-            return { error: `Array must not be empty`, code:422};
+            throw { error: `Array must not be empty`, code:422};
         }
         try {
             await this.dao.modifyRestockOrderSKUs(id, body.skuItems);
             return;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     modifyRestockOrderNote = async (id, body) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -169,13 +159,13 @@ class OrderService {
             await this.dao.modifyRestockOrderNote(id, body.transportNote);
             return;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     deleteRestockOrder = async (id) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -184,7 +174,16 @@ class OrderService {
             await this.dao.deleteRestockOrder(id);
             return;
         } catch (error) {
-            return error
+            throw error
+        }
+    }
+
+    dropTable = async () => {
+        try {
+            await this.dao.dropTable();
+            return;
+        } catch (error) {
+            throw error
         }
     }
 
@@ -203,13 +202,13 @@ class OrderService {
             ));
             return orderDTO;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     getReturnOrder = async (id) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -226,7 +225,7 @@ class OrderService {
             ));
             return orderDTO;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -235,7 +234,7 @@ class OrderService {
             await this.dao.newTableReturnOrder();
             return ;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -247,20 +246,20 @@ class OrderService {
         if(!dayjs(date).isValid()){
             throw {error: "Invalid date!", code:422};
         }
-        if(!Number.isInteger(body.restockOrderId)){
+        if(Number.isNaN(body.restockOrderId)){
             throw {error: "Invalid restockOrderId!", code:422};
         }
         try {
             await this.dao.newReturnOrder(body);
             return ;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     deleteReturnOrder = async (id) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -269,7 +268,16 @@ class OrderService {
             await this.dao.deleteReturnOrder(id);
             return;
         } catch (error) {
-            return error
+            throw error
+        }
+    }
+
+    dropTableReturnOrder = async () => {
+        try {
+            await this.dao.dropTableReturnOrder();
+            return;
+        } catch (error) {
+            throw error
         }
     }
 
@@ -289,7 +297,7 @@ class OrderService {
             ));
             return orderDTO;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -307,7 +315,7 @@ class OrderService {
             ));
             return orderDTO;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -325,13 +333,13 @@ class OrderService {
             ));
             return orderDTO;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     getInternalOrder = async (id) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -349,7 +357,7 @@ class OrderService {
             ));
             return orderDTO;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -358,7 +366,7 @@ class OrderService {
             await this.dao.newTableInternalOrder();
             return ;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
@@ -370,20 +378,20 @@ class OrderService {
         if(!dayjs(date).isValid()){
             throw {error: "Invalid date!", code:422};
         }
-        if(!Number.isInteger(body.customerId)){
+        if(Number.isNaN(body.customerId)){
             throw {error: "Invalid customerId!", code:422};
         }
         try {
             await this.dao.newInternalOrder(body);
             return ;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     modifyInternalOrder = async (id, body) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -401,13 +409,13 @@ class OrderService {
             await this.dao.modifyInternalOrder(id, state, products);
             return;
         } catch (error) {
-            return error
+            throw error
         }
     }
 
     deleteInternalOrder = async (id) => {
-        if(!Number.isInteger(id)){
-            throw {error:"Id is not an integer number number", code:422}
+        if(Number.isNaN(parseInt(id))){
+            throw {error:"Id is not a number", code:422}
         }
         if(id<=0){
             throw {error:"Id is less or equal than 0", code:422}
@@ -416,7 +424,16 @@ class OrderService {
             await this.dao.deleteInternalOrder(id);
             return;
         } catch (error) {
-            return error
+            throw error
+        }
+    }
+
+    dropTableInternalOrder = async () => {
+        try {
+            await this.dao.dropTableInternalOrder();
+            return;
+        } catch (error) {
+            throw error
         }
     }
 

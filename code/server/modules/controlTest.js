@@ -36,7 +36,7 @@ class controlTest {
         });
     }
     
-    dropTable() {
+    dropTableTestDescriptors() {
         return new Promise((resolve, reject) => {
             const sql = 'DROP TABLE IF EXISTS TEST_DESCRIPTOR';
             this.db.run(sql, (err) => {
@@ -103,8 +103,7 @@ class controlTest {
             const sql = 'INSERT INTO TEST_DESCRIPTOR(NAME, PROCEDURE_DESCRIPTION, ID_SKU) VALUES(?, ?, ?)';
             this.db.run(sql, [data.name, data.procedureDescription, data.idSKU], (err) => {
                 if (err) {
-                    console.log(err);
-                    reject(err);
+                    reject("no sku associated idSKU");
                     return;
                 }
                 resolve(this.lastID);
@@ -123,7 +122,7 @@ class controlTest {
                 }
 
                 if (rows.length < 1)
-                    reject('not found');             
+                    reject('no test descriptor associated id or no sku associated to IDSku');             
             });
 
             const sql2 = "UPDATE TEST_DESCRIPTOR SET NAME = ?, PROCEDURE_DESCRIPTION = ?, ID_SKU = ? WHERE ID = ?"
@@ -131,7 +130,7 @@ class controlTest {
 
                 if (err) {
                     console.log(err);
-                    reject(err);
+                    reject("no test descriptor associated id or no sku associated to IDSku");
                     return;
                 }
 
@@ -145,14 +144,15 @@ class controlTest {
             const sql1 = "SELECT * FROM TEST_DESCRIPTOR WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
 
                 if (rows.length < 1)
-                    reject('not found');             
-            });
+                    reject("validation of id failed");
+
+                resolve('done')
+            })
 
             const sql2 = "DELETE FROM TEST_DESCRIPTOR WHERE ID = ?"
             this.db.all(sql2, [id], (err, rows) => {
@@ -160,7 +160,6 @@ class controlTest {
                     reject(err);
                     return;
                 }
-
                 resolve('done')
             })
         });
@@ -188,6 +187,19 @@ class controlTest {
         });
     }
 
+    dropTableTestResult() {
+        return new Promise((resolve, reject) => {
+            const sql = 'DROP TABLE IF EXISTS TEST_RESULT';
+            this.db.run(sql, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(this.lastID);
+            });
+        });
+    }
+
     getTestResults(rfid) {
         return new Promise((resolve, reject) => {
             const sql = `SELECT * FROM TEST_DESCRIPTOR AS TD, TEST_RESULT AS TR WHERE TD.ID = TR.ID_TEST_DESCRIPTOR AND TD.ID_SKU = ?`;
@@ -197,10 +209,8 @@ class controlTest {
                     reject(err);
                     return;
                 }
-                if (rows.length == 0)
-                    reject("not found");
 
-                resolve(TestDescriptors);
+                resolve(rows);
             });
         });
     }
@@ -217,7 +227,7 @@ class controlTest {
                 if (rows.length == 0)
                     reject("not found");
 
-                resolve(TestDescriptors);
+                resolve(rows);
             });
         });
     }
@@ -262,7 +272,7 @@ class controlTest {
             const sql = 'INSERT INTO TEST_RESULT(ID_TEST_DESCRIPTOR, DATE, RESULT) VALUES(?, ?, ?)';
             this.db.run(sql, [data.idTestDescriptor, data.Date, data.Result], (err) => {
                 if (err) {
-                    reject(err);
+                    reject("no sku item associated to rfid or no test descriptor associated to idTestDescriptor");
                     return;
                 }
                 resolve(this.lastID);
@@ -298,20 +308,20 @@ class controlTest {
         });
     }
 
-    deleteTestResult(rfid, id) {
+    deleteTestResult(id) {
         return new Promise((resolve, reject) => {
-            const sql1 = "SELECT * FROM TEST_DESCRIPTOR AS TD, TEST_RESULT AS TR WHERE TD.ID = TR.ID_TEST_DESCRIPTOR AND TD.ID_SKU = ? AND TR.ID = ?";
-            this.db.all(sql1, [rfid, id], (err, rows) => {
+            const sql1 = "SELECT * FROM TEST_RESULT WHERE ID = ?"
+            this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
-
+    
                 if (rows.length < 1)
-                    reject('not found'); 
-                                
-            });
+                    reject("validation of id failed");
+                    
+                resolve('done')
+            })
 
             const sql2 = "DELETE FROM TEST_RESULT WHERE ID = ?"
             this.db.all(sql2, [id], (err, rows) => {
@@ -319,7 +329,6 @@ class controlTest {
                     reject(err);
                     return;
                 }
-
                 resolve('done')
             })
         });

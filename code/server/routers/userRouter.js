@@ -322,4 +322,13 @@ router.delete('/users/:username/:type', async (req, res) => {
     }
 })
 
+router.delete('/dropSequence', (req, res) => {
+    try {
+        service.dropSequence();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+});
+
 module.exports = router;
