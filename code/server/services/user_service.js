@@ -87,6 +87,11 @@ class UserService {
         const res = await this.dao.dropContentUser();
         return res;
     }
+
+    dropSequence = async () => {
+        const res = await this.dao.dropSequence();
+        return res;
+    }
 }
 
 module.exports = UserService;

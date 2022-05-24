@@ -9,6 +9,19 @@ class controlUser {
 
     }
 
+    dropSequence() {
+        return new Promise((resolve, reject) => {
+            const sql = 'DELETE FROM sqlite_sequence';
+            this.db.run(sql, (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve('eliminata con successo')
+            });
+        });
+    }
+
     dropContentUser() {
         return new Promise((resolve, reject) => {
             const sql = 'DELETE FROM USER';
