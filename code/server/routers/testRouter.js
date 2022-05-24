@@ -54,7 +54,10 @@ router.post('/testDescriptor', async (req, res) => {
         await service.createTestDescriptor(testDescriptor);
         return res.status(201).end();
     } catch (err) {
-        res.status(500).json({ err }).end();
+        if (err = "no sku associated idSKU")
+            res.status(404).json({ error: "no sku associated idSKU" })
+        else
+            res.status(503).end()
     }
 
 });
@@ -78,8 +81,8 @@ router.put('/testDescriptor/:id', async (req, res) => {
         await service.modifyTestDescriptor(req.params.id, newTestDescriptor);
         res.status(200).end()
     } catch (err) {
-        if (err = 'not found')
-            res.status(404).json({ error: `wrong id` })
+        if (err = "no test descriptor associated id or no sku associated to IDSku")
+            res.status(404).json({ error: "no test descriptor associated id or no sku associated to IDSku" })
         else
             res.status(503).end()
     }

@@ -25,12 +25,12 @@ describe("get testDescriptor", () => {
     beforeEach(async () => {
         await controller.dropTableTestDescriptors();
         await controller.newTableTestDescriptor();
-        await controller.createTestDescriptor({    
+        await test_service.createTestDescriptor({    
             name:"test descriptor 1",
             procedureDescription: "This test is described by...",
             idSKU:1
         });
-        await controller.createTestDescriptor({
+        await test_service.createTestDescriptor({
             name:"test descriptor 2",
             procedureDescription: "This test is described by...",
             idSKU:2
@@ -53,11 +53,52 @@ async function testTestDescriptor(testDescriptor) {
     });
 }
 
+describe("create testDescriptor", () => {
+    beforeEach(async () => {
+        await controller.dropTableTestDescriptors();
+        await controller.newTableTestDescriptor();
+    })
+    describe("create testDescriptor data", () => {
+        test('testDescriptor', async () => {                                        
+            const testDescriptor = {
+                name:"test descriptor 1",
+                procedureDescription: "This test is described by...",
+                idSKU: 2
+            }
+
+            let res = await test_service.createTestDescriptor(testDescriptor);
+            res = await test_service.getTestDescriptor(1);
+            expect(res[0]).toEqual({
+                id: 1,
+                name: testDescriptor.name,
+                procedureDescription: testDescriptor.procedureDescription,
+                idSKU: testDescriptor.idSKU
+            });
+        })
+
+        
+        test('testDescriptor no sku associated idSKU', async () => {                                           // test 5
+            const testDescriptor = {
+                name:"test descriptor 3",
+                procedureDescription: "This test is described by...",
+                idSKU:3
+            }
+            try{    
+                let res = await test_service.createTestDescriptor(testDescriptor);
+            }
+            catch(err){
+                expect(err).toEqual("no sku associated idSKU");
+            }
+        })
+        
+    });
+});
+
 describe("modify testDescriptor", () => {
     beforeEach(async () => {
         await controller.dropTableTestDescriptors();
         await controller.newTableTestDescriptor();
-        await controller.createTestDescriptor(testDescriptor1);
+        await test_service.createTestDescriptor(testDescriptor1);
     })
 
     describe("modify testDescriptor data with success", () => {
@@ -68,15 +109,30 @@ describe("modify testDescriptor", () => {
                 newIdSKU:2
             }
 
-            let res = await test_service.modifyTestDescriptor(testDescriptor1.id, newTestDescriptor);
-            res = await test_service.getTestDescriptor(testDescriptor1.id);
+            let res = await test_service.modifyTestDescriptor(1, newTestDescriptor);
+            res = await test_service.getTestDescriptor(1);
             
             expect(res[0]).toEqual({
-                id: testDescriptor1.id,
+                id: 1,
                 name: newTestDescriptor.newName,
                 procedureDescription: newTestDescriptor.newProcedureDescription,
                 idSKU: newTestDescriptor.newIdSKU
             });
+        })
+
+        test('testDescriptor no test descriptor associated id or no sku associated to IDSku', async () => {                                           // test 5
+            const newTestDescriptor = {
+                newName:"new test descriptor",
+                newProcedureDescription: "This test is described by...",
+                newIdSKU:2
+            }
+
+            try{    
+                let res = await test_service.modifyTestDescriptor(2, newTestDescriptor);
+            }
+            catch(err){
+                expect(err).toEqual("no test descriptor associated id or no sku associated to IDSku");
+            }
         })
     });
 });
