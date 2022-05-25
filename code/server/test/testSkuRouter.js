@@ -15,6 +15,21 @@ const SKU ={
     price : 10.99,
 }
 
+const SKUItem1post = {                                           
+    RFID:"12345678901234567890123456789015",
+    SKUId:1,
+    DateOfStock:"2021/11/29 12:30"
+}
+
+const Item1 = {                                           
+    id : 12,
+    description : "a new item",
+    price : 10,
+    SKUId : 1,
+    supplierId : 2
+}
+
+
 position = {
     positionID:"800234543412",
     aisleID: "8002",
@@ -284,9 +299,15 @@ function deleteSKU(expectedHTTPStatus, description, weight, volume, notes, price
 
 describe('test SKUItem apis', () => {
 
+
+    
     beforeEach(async () => {
-        await agent.delete('/api/deleteAllSKUItem');
         await agent.delete('/api/deleteSKUTable');
+        await agent.post('/api/skuitem')
+        .send(SKUItem1post)
+        await agent.delete('/api/deleteAllSKUItem')
+        await agent.delete('/api/deleteAllTestDescriptors');
+        await agent.delete('/api/deleteAllTestResults');
         await agent.post('/api/sku')
         .send(SKU)
     })
@@ -798,7 +819,11 @@ function deletePosition(expectedHTTPStatus, positionID, aisleID, row, col, maxWe
 describe('test Item apis', () => {
 
     beforeEach(async () => {
+        await agent.post('/api/item')
+        .send(Item1)
         await agent.delete('/api/deleteAllItem');
+        await agent.delete('/api/deleteAllTestDescriptors');
+        await agent.delete('/api/deleteAllTestResults');
         await agent.delete('/api/deleteSKUTable');
         await agent.post('/api/sku')
         .send(SKU)
