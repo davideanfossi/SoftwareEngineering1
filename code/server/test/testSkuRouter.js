@@ -24,7 +24,7 @@ position = {
     maxVolume: 1000
 }
 
-describe('test first 6 SKU apis', () => {
+describe('test SKU apis', () => {
 
     beforeEach(async () => {
         await agent.delete('/api/deletePositionTable');
