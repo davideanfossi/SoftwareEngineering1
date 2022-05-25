@@ -116,7 +116,6 @@ class controlTest {
             const sql1 = "SELECT * FROM TEST_DESCRIPTOR WHERE ID = ?"
             this.db.all(sql1, [id], (err, rows) => {
                 if (err) {
-                    console.log(err);
                     reject(err);
                     return;
                 }
@@ -129,7 +128,6 @@ class controlTest {
             this.db.all(sql2, [data.newName, data.newProcedureDescription, data.newIdSKU, id], (err, rows) => {
 
                 if (err) {
-                    console.log(err);
                     reject("no test descriptor associated id or no sku associated to IDSku");
                     return;
                 }
@@ -224,8 +222,6 @@ class controlTest {
                     reject(err);
                     return;
                 }
-                if (rows.length == 0)
-                    reject("not found");
 
                 resolve(rows);
             });
@@ -292,7 +288,8 @@ class controlTest {
                 }
 
                 if (rows.length < 1)
-                    reject('not found');             
+                    reject('not found');
+                                 
             });
 
             const sql2 = "UPDATE TEST_RESULT SET ID_TEST_DESCRIPTOR = ?, DATE = ?, RESULT = ? WHERE ID = ?"

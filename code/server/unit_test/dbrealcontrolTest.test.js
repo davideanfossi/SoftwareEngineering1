@@ -343,8 +343,11 @@ describe("delete testResults", () => {
             Result: 0
         });
         await test_service.deleteTestResult(1);
-        let res = await test_service.getTestResults(testResult1.rfid);
-        expect(res.length).toEqual(0);
+        try {
+            let res = await test_service.getTestResults(testResult1.rfid);
+        } catch (err) {
+            expect(err.code).toEqual(404);
+        }
     })
 
     test('delete testResults validation of id failed', async () => {  

@@ -40,7 +40,7 @@ router.post('/testDescriptor', async (req, res) => {
 
     if (testDescriptor === undefined || testDescriptor.name === undefined || testDescriptor.procedureDescription === undefined || testDescriptor.idSKU === undefined ||
         testDescriptor.name == '' || testDescriptor.procedureDescription == '' || testDescriptor.idSKU === '') {
-        return res.status(422).json({ error: `Invalid testDescriptor data` });
+        return res.status(422).json({ error: `validation of request body failed` });
     }
 
     try {
@@ -74,7 +74,7 @@ router.put('/testDescriptor/:id', async (req, res) => {
 
     if (newTestDescriptor === undefined || newTestDescriptor.newName === undefined || newTestDescriptor.newProcedureDescription === undefined || newTestDescriptor.newIdSKU === undefined ||
         newTestDescriptor.newName === '' || newTestDescriptor.newProcedureDescription === '' || newTestDescriptor.newIdSKU === '') {
-        return res.status(422).json({ error: `Invalid data` });
+        return res.status(422).json({ error: `validation of request body or of id failed` });
     }
 
     try {
@@ -107,14 +107,13 @@ router.delete('/testDescriptor/:id', async (req, res) => {
 
 router.get('/skuitems/:rfid/testResults', async (req, res) => {
     if (!Number.isInteger(parseInt(req.params.rfid)))
-        res.status(422).json({ error: "rfid is not a number" }).end();
-
+        res.status(422).json({ error: "validation of rfid failed" }).end();
     try {
         const testResultsList = await service.getTestResults(req.params.rfid);
         res.status(200).json(testResultsList);
     } catch (err) {
-        if (err == "not found")
-            res.status(404).json({ error: "no test result with this sku" }).end();
+        if (err.code == 404)
+            res.status(404).json({ error: "no sku item associated to rfid" }).end();
         res.status(500).end();
     }
 });
@@ -130,7 +129,7 @@ router.get('/skuitems/:rfid/testResults/:id', async (req, res) => {
         const testResult = await service.getTestResult(req.params.rfid, req.params.id);
         res.status(200).json(testResult);
     } catch (err) {
-        if (err == "not found")
+        if (err.code == 404)
             res.status(404).json({ error: "no test result with this sku or id" }).end();
         res.status(500).end();
     }
@@ -141,7 +140,7 @@ router.post('/skuitems/testResult', async (req, res) => {
         return res.status(422).json({ error: `Empty body request` });
     }
     let testResult = req.body;
-
+    
     if (testResult === undefined || testResult.idTestDescriptor === undefined || testResult.Date === undefined || testResult.Result === undefined ||
         testResult.idTestDescriptor == '' || testResult.Date == '' || testResult.Result === '') {
         return res.status(422).json({ error: `Invalid testDescriptor data` });
@@ -184,9 +183,9 @@ router.put('/skuitems/:rfid/testResult/:id', async (req, res) => {
     try {
         await service.modifyTestResult(req.params.rfid, req.params.id, testResult);
         res.status(200).end()
-    } catch (err) {
-        if (err = 'not found')
-            res.status(404).json({ error: `wrong id or rfid` })
+    } catch (err) {    
+        if (err == 'not found')
+            res.status(404).json({ error: `no sku item associated to rfid or no test descriptor associated to newIdTestDescriptor or no test result associated to id` })
         else
             res.status(503).end()
     }
@@ -203,14 +202,16 @@ router.delete('/skuitems/:rfid/testResult/:id', async (req, res) => {
         await service.deleteTestResult(req.params.rfid, req.params.id);
         res.status(204).end();
     } catch (err) {
-        if (err == "not found")
-            res.status(422).json({ error: "rfid or id not found" }).end();
+        if (err == "validation of id failed")
+            res.status(422).json({ error: "validation of id failed" }).end();
         else
             res.status(503).end();
     }
 })
 
-router.delete('/deleteAllTestDescriptors', async (req, res) => {                // PER TEST
+//  <----------- for api tests ----------->
+
+router.delete('/deleteAllTestDescriptors', async (req, res) => {                
     try {
         await db.dropTableTestDescriptors();
         await db.newTableTestDescriptor();
@@ -220,7 +221,7 @@ router.delete('/deleteAllTestDescriptors', async (req, res) => {                
     }
 }); 
 
-router.delete('/deleteAllTestResults', async (req, res) => {                // PER TEST
+router.delete('/deleteAllTestResults', async (req, res) => {               
     try {
         await db.dropTableTestResult();
         await db.newTableTestResults();

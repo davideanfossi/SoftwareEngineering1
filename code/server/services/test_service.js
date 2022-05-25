@@ -56,6 +56,7 @@ class TestService {
 
     getTestResults = async (rfid) => {
         const rows = await this.dao.getTestResults(rfid);
+        if (rows.length < 1) throw {error: "not found", code:404};
         const testResults = rows.map((r) => (
             {
                 id: r.ID,
@@ -70,6 +71,7 @@ class TestService {
 
     getTestResult = async (rfid, id) => {
         const rows = await this.dao.getTestResults(rfid, id);
+        if (rows.length < 1) throw {error: "not found", code:404};
         const testResult = rows.map((r) => (
             {
                 id: r.ID,
@@ -102,7 +104,7 @@ class TestService {
         return res;
     }
 
-    deleteTestResult = async (id) => {
+    deleteTestResult = async (rfid, id) => {
         const res = await this.dao.deleteTestResult(id);
         return res;
     }
