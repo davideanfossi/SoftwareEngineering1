@@ -14,7 +14,6 @@ Version:
 - [Integration approach](#integration-approach)
 - [Integration Tests](#integration-tests)
   - [Step 1](#step-1)
-  - [Step 2](#step-2)
 - [API testing - Scenarios](#api-testing---scenarios)
   - [Scenario UCx.y](#scenario-ucxy)
 - [Coverage of Scenarios and FR](#coverage-of-scenarios-and-fr)
@@ -33,7 +32,25 @@ Version:
 # Dependency graph 
 
      <report the here the dependency graph of the classes in EzWH, using plantuml or other tool>
-     
+
+```plantuml
+@startmindmap
+     * Server
+     ** User Router (API)
+     *** User Service
+     **** Control User (DAO)
+     ** Test Router (API)
+     *** Test Service
+     **** Control Test (DAO)
+     ** SKU Router (API)
+     *** SKU Service
+     **** Control SKU (DAO)
+     ** Order Router (API)
+     *** Order Service
+     **** Control Order (DAO)
+@endmindmap
+```
+![alt text](DependencyGraph.svg)
 # Integration approach
 
     The integration sequence adopted is Bottom Up.
@@ -45,16 +62,8 @@ Version:
    <define below a table for each integration step. For each integration step report the group of classes under test, and the names of
      Jest test cases applied to them, and the mock ups used, if any> Jest test cases should be here code/server/unit_test
 
+
 ## Step 1
-| Classes  | Jest test cases |
-|--|--|
-| controlUser | get supplier, get supplier wrong, get user , create new user, create new user with bad type, check user for new user good, check user for new user bad, check user for delete/update good, check user for delete/update bad, do session good, do session bad, modify user right, delete user|
-| controlOrder(restock Order) | retriving a new restock order, retriving a single order, unexpected data format, 'modify state of order, add transport note, add SKUItems |
-| controlOrder(internal Order) | modify a single order |
-| controlOrder(return Order)| get a new order|
-
-
-## Step 2
 | Classes  | Jest test cases |
 |--|--|
 |controlUser + userService| create and retrive new User, create new User that already exist, get new supplier, get supplier without supplier in db, check for newUser done, check for newUser bad, check for update/del user done, check for update/del user bad, do session with right credentials, do session with credentials incorrect, change user right, delete user|
@@ -64,7 +73,6 @@ Version:
 |controlSKU (Position) + SKUService| get Position, Positions modification success, Positions modification error (newOccupiedWeight > newMaxWeight), Positions modification error (not only digits in newRow), Position with success, Postion with 422 (not derived error), Postion with 422 (wrong aisleid length), PositionID modification success, PositionID modification error (not only digits), PositionID modification error (not only digits in old position)  |
 |controlSKU (Item) + SKUService| get Item, modify Item data with success, modify Item data with error (new price negative), delete Items, delete Item empty, delete Item with 404 error |
 |controlOrder (restock Order) + orderService | create an order, delete an order, fail to cerate an order, modify state of an order, fail to modify an order by its ID, retrive de SKUs and try wrong ID, try to modify note with wrong ID |
-
 
 
 
@@ -106,20 +114,31 @@ Report also for each of the scenarios the (one or more) API Mocha tests that cov
 | 2-3 (modify weight volume of p) | FR3.1.3 <br/> FR3.1.4 (modify attr)  |  getPositions() <br/> modifyPosition()   |  
 | 2-4 (Modify aisle ID, row and column of P) | FR3.1.3 <br/> FR3.1.4 | getPositions() <br/> modifyPosition()|  
 | 2-5 (Delete Position) | FR3.1.3 <br/> FR3.1.2 (delete) | getPositions() <br/> deletePosition()|           
-| 3-1 (Restock Order of SKU S issued by quantity) | FR5.1 <br/> FR5.3  <br/> FR5.5 <br/> FR5.6 ?? ||           
-| 3-2 (Restock Order of SKU S issued by supplier) | FR5.1 <br/> FR5.5  <br/> FR5.3 <br/> FR5.6 ?? ||      
+| 3-1 (Restock Order of SKU S issued by quantity) | FR5.1 <br/> FR5.3  <br/> FR5.2  <br/> FR5.5 <br/> FR5.6 | newRestockOrder() <br/> modifyRestockOrderState() <br/> modifyRestockOrderSkuItems() |           
+| 3-2 (Restock Order of SKU S issued by supplier) | FR5.1 <br/> FR5.3  <br/> FR5.2  <br/> FR5.5 <br/> FR5.6 | newRestockOrder() <br/> modifyRestockOrderState() <br/> modifyRestockOrderSkuItems()|      
 | 4-1 (Create user and define rights) |  FR1.1 <br/> FR1.5 | newUser() <br/> updateUserType()|           
 | 4-2 (Modify user rights) | FR1.4 <br/> FR1.3 <br/> FR1.5 | getUsers() <br/> updateUserType()|  
 | 4-3 (Delete user) | FR1.4 <br/> FR1.3 <br/> FR1.2 | getUsers() <br/> deleteUser()|  
-| 5-1-1 (Record restock order arrival) | FR5.8.1 <br/> FR5.8.3 <br/> FR5.7 ??  ||  
-| 5-2-1 (Record positive test results of all SKU items of a RestockOrder) | FR5.8.2 <br/> FR5.7 ?? ||  
-| 5-2-2 (Record negative test results of all SKU items of a RestockOrder) | FR5.8.2 <br/> FR5.7 ?? ||  
-| 5-2-3 (Record negative and positive test results of all SKU items of a) | FR5.8.2 <br/> FR5.7 ?? ||  
-| 5-3-1 (Stock all SKU items of a RO) | (BOH) <br/> FR3.1.4 <br/> FR2.1 <br/>FR5.7 ?? ||  
-| 5-3-2 (Stock zero SKU items of a RO) | ||
-| 5-3-3 (Stock some SKU items of a RO) | ||  
-| 6-1 (Stock some SKU items of a RO) | ||  
-| 6-2 (Stock some SKU items of a RO) | ||  
+| 5-1-1 (Record restock order arrival) | FR5.8.1 <br/> FR5.8.3 <br/> FR5.7  | newRestockOrder() |  
+| 5-2-1 (Record positive test results of all SKU items of a RestockOrder) | FR5.8.2 <br/> FR5.7  | createTestResult() |  
+| 5-2-2 (Record negative test results of all SKU items of a RestockOrder) | FR5.8.2 <br/> FR5.7  | createTestResult() |  
+| 5-2-3 (Record negative and positive test results of all SKU items of a) | FR5.8.2 <br/> FR5.7  | createTestResult() |  
+| 5-3-1 (Stock all SKU items of a RO) | FR3.1.4 <br/> FR2.1 <br/>FR5.7 | modifySKU() <br/> modifySKUPosition() <br/> modifyPosition() |  
+| 5-3-2 (Stock zero SKU items of a RO) |  FR5.7 | getTestResult() <br/> modifyRestockOrderState()|
+| 5-3-3 (Stock some SKU items of a RO) | FR3.1.4 <br/> FR2.1 <br/>FR5.7 |  modifySku() <br/> modifySKUPosition() <br/> modifyPosition()|  
+| 6-1 (Return order of SKU items that failed quality test) | FR5.9  | getTestResult() <br/> newReturnOrder() <br/> modifySKUItem() |  
+| 6-2 (Return order of any SKU items) | FR5.9 <br/> FR2.1 | getTestResult() <br/> newReturnOrder() <br/> modifySKUItem() <br/> modifyPosition() <br/> modifySku() |  
+| 7-1 (Login) | FR1.5 (modify user rights) | managerSession() <br/> customerSession() <br/> supplierSession() <br/> clerkSession() <br/>  qualityEmployeeSession() <br/> deliveryEmployeeSession() |  
+| 7-2 (Logout) | // ||  
+| 9-1 (Internal Order IO accepted) | FR6.3 (qty of sku) <br/> FR6.2(add sku) <br/> FR6.7 (change state)<br/> decrease availab <br/> FR6.6 (Accept) |newInternalOrder() <br/> modifyInternalOrderState()|  
+| 9-2 (Internal Order IO refused) | FR6.3 <br/> FR6.2 <br/> FR6.7  <br/> decrease availab <br/> FR6.6 | newInternalOrder() <br/> modifyInternalOrderState() |  
+| 9-3 (Internal Order IO cancelled) | FR6.3 <br/> FR6.2 <br/> FR6.7  <br/> decrease availab <br/> FR6.6  | newInternalOrder() <br/> modifyInternalOrderState()|  
+| 10-1 (Internal Order IO Completed) | FR6.8 (manage delivery)  <br/> (set skuitem not avail) <br/> FR6.7 | modifySkuItem() <br/> modifyInternalOrderState()|  
+| 11-1 (Create Item I) | FR7 | createItem() |  
+| 11-2 (Modify Item description and price) | FR7 | getItem() <br/> modifyItem()|  
+| 12-1 (Create test description) | FR3.2.1 | createTestDescriptor() |  
+| 12-2 (Update test description) | FR3.2.2 | getTestDescriptors() <br/> modifyTestDescriptor()|  
+| 12-3 (Delete test description) | FR3.2.3 | getTestDescriptors() <br/> deleteTestDescriptor()|  
 
 
 
@@ -142,5 +161,10 @@ Report also for each of the scenarios the (one or more) API Mocha tests that cov
 
 | Non Functional Requirement | Test name |
 | -------------------------- | --------- |
-|                            |           |
+|            NFR4(Position)                |   createPosition(), modifyPosition(), modifyPositionId() |
+|            NFR6(rfid 32 digits)          |   createSKUItem(), modifySKUItem() |
+|            NFR9(DateFormat)              |   createSKUItem(), modifySKUItem(), newRestockOrder(), newReturnOrder(), newInternalOrder()|
+
+
+
 
