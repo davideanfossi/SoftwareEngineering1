@@ -21,11 +21,15 @@ const testDescriptor2 = {
     idSKU:2
 };
 
+const startup = async () => {
+    await controller.dropTableTestResult(); 
+    await controller.dropTableTestDescriptors();
+    await controller.newTableTestDescriptor();
+}
+
 describe("get testDescriptor", () => {
     beforeEach(async () => {
-        await controller.dropTableTestResult(); 
-        await controller.dropTableTestDescriptors();
-        await controller.newTableTestDescriptor();
+        await startup();
         await test_service.createTestDescriptor({    
             name:"test descriptor 1",
             procedureDescription: "This test is described by...",
@@ -342,11 +346,11 @@ describe("delete testResults", () => {
             Date:"2021/11/29",
             Result: 0
         });
-        await test_service.deleteTestResult(1);
         try {
+            await test_service.deleteTestResult(1);
             let res = await test_service.getTestResults(testResult1.rfid);
         } catch (err) {
-            expect(err.code).toEqual(404);
+            expect(err).toEqual('validation of id failed');
         }
     })
 

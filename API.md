@@ -44,7 +44,7 @@ Date: 03 May 2022
     [
         {
             "id":1,
-           "description" : "a new sku",
+            "description" : "a new sku",
             "weight" : 100,
             "volume" : 50,
             "notes" : "first SKU",

@@ -46,22 +46,34 @@ class controlSku {
     
     getSkuById(id) {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT * FROM SKU, TEST_DESCRIPTOR AS TD WHERE SKU.ID = TD.ID_SKU AND SKU.ID = ?`;
+            const sql = `SELECT 
+                        SKU.ID AS ID, 
+                        TD.ID AS TD_ID,
+                        DESCRIPTION, 
+                        WEIGHT,
+                        VOLUME, 
+                        NOTES, 
+                        POSITION, 
+                        AVAILABLE_QUANTITY, 
+                        PRICE 
+                        FROM SKU LEFT JOIN TEST_DESCRIPTOR AS TD ON SKU.ID = TD.ID_SKU WHERE SKU.ID = ?`;
             this.db.all(sql, [id], (err, rows) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                 if (rows.length < 1){
+                
+                if (rows.length < 1){
                     reject("not found");
                     return;
                 }    
 
                 let testDescriptors = [];
-                rows.forEach(r => testDescriptors.push(r.ID));
+                rows.forEach(r => testDescriptors.push(r.TD_ID));
                 let a = [rows[0]];
                 const sku = a.map((r) => (
                     {
+                        id: r.ID,
                         description : r.DESCRIPTION,
                         weight : r.WEIGHT,
                         volume : r.VOLUME,

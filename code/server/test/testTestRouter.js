@@ -11,6 +11,12 @@ describe.only('test testDescriptor apis', () => {
     beforeEach(async () => {
         await agent.delete('/api/deleteAllTestResults');
         await agent.delete('/api/deleteAllTestDescriptors');
+        await agent.delete('/api/deleteSKUItemTable');
+        await agent.post('/api/skuitem').send({
+            RFID:"12345678901234567890123456789015",
+            SKUId:1,
+            DateOfStock:"2021/11/29 12:30"
+        });
     })
 
     deleteAllTestResults(204);

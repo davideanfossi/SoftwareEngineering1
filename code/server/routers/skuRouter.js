@@ -233,6 +233,7 @@ router.put('/sku/:id', async (req, res) => {
             res.status(503).end()
     }
 }); 
+
 router.put('/sku/:id/position', async (req, res) => {
     if (!Number.isInteger(parseInt(req.params.id)))
         res.status(422).json({ error: "id is not a number" }).end();

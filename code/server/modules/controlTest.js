@@ -313,10 +313,10 @@ class controlTest {
                     reject(err);
                     return;
                 }
-    
+                
                 if (rows.length < 1)
                     reject("validation of id failed");
-                    
+
                 resolve('done')
             })
 

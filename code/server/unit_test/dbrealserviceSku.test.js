@@ -1,10 +1,202 @@
 const skuService = require('../services/sku_service');
 const controlSKU = require('../modules/controlSku');
-
-// const dao = require('../modules/controlSku');
-
+const controlTest = require('../modules/controlTest');
 const controller = new controlSKU('EzWh.db');
+const controller2 = new controlTest('EzWh.db');
 const sku_service = new skuService(controller);
+
+// sku tests
+
+const SKU = {
+    description : "first sku",
+    weight : 101,
+    volume : 60,
+    notes : "first SKU",
+    availableQuantity : 55,
+    price : 10.99,
+}
+
+const newSKU = {
+    newDescription: "a new sku",
+    newWeight: 200,
+    newVolume: 20,
+    newNotes: "new SKU",
+    newPrice: 50.99,
+    newAvailableQuantity: 5
+}
+
+const position = {
+    positionID:"800234543412",
+    aisleID: "8002",
+    row: "3454",
+    col: "3412",
+    maxWeight: 1000,
+    maxVolume: 1000,
+}
+
+const startup = async () => {
+    await controller.dropPositionTable();
+    await controller.newTablePosition();
+    await controller.createPosition(position);
+    await controller2.dropTableTestResult(); 
+    await controller2.dropTableTestDescriptors();
+    await controller2.newTableTestDescriptor();
+    await controller.dropSKUItemTable();
+    await controller.newTableSKUItem();
+    await controller.newTableItem();
+    await controller.dropItemTable();
+    await controller.dropSKUTable();
+    await controller.newTableSku();
+}
+
+describe("get SKUs", () => {
+    beforeEach(async () => {
+        await startup();
+        await sku_service.createSku(SKU);
+    });
+
+    test('get SKUs', async () => {
+        let res = await sku_service.getSkus();
+        
+        expect(res[0]).toEqual({
+            id: 1,
+            description : SKU.description,
+            weight : SKU.weight,
+            volume : SKU.volume,
+            notes : SKU.notes,
+            position : null,
+            availableQuantity : SKU.availableQuantity,
+            price : SKU.price,
+            testDescriptors: [null]
+        });
+    });                     
+});
+
+describe("get SKU", () => {
+    beforeEach(async () => {
+        await startup();
+        await sku_service.createSku(SKU);
+    });
+
+    test('get SKU', async () => {
+        let res = await sku_service.getSku(1);
+        
+        expect(res[0]).toEqual({
+            id: 1,
+            description : SKU.description,
+            weight : SKU.weight,
+            volume : SKU.volume,
+            notes : SKU.notes,
+            position : null,
+            availableQuantity : SKU.availableQuantity,
+            price : SKU.price,
+            testDescriptors: [null]
+        });
+    });                     
+});
+
+describe("create SKU", () => {
+    beforeEach(async () => {
+        await startup();
+    });
+
+    test('create SKU', async () => {
+        await sku_service.createSku(SKU);
+        let res = await sku_service.getSku(1);
+        
+        expect(res[0]).toEqual({
+            id: 1,
+            description : SKU.description,
+            weight : SKU.weight,
+            volume : SKU.volume,
+            notes : SKU.notes,
+            position : null,
+            availableQuantity : SKU.availableQuantity,
+            price : SKU.price,
+            testDescriptors: [null]
+        });
+    });     
+});
+
+describe("modify SKU", () => {
+    beforeEach(async () => {
+        await startup();
+        await sku_service.createSku(SKU);
+    });
+
+    test('modify SKU', async () => {
+        await sku_service.modifySku(1, newSKU);
+        let res = await sku_service.getSku(1);
+        
+        expect(res[0]).toEqual({
+            id: 1,
+            description : newSKU.newDescription,
+            weight : newSKU.newWeight,
+            volume : newSKU.newVolume,
+            notes : newSKU.newNotes,
+            position : null,
+            availableQuantity : newSKU.newAvailableQuantity,
+            price : newSKU.newPrice,
+            testDescriptors: [null]
+        });
+    });     
+
+    test('modify SKU with wrong id', async () => {
+        try {
+            await sku_service.modifySku(2, newSKU);
+        } catch (err) {
+            expect(err).toEqual("not found");
+        }
+    }); 
+});
+
+describe("modify SKU position", () => {
+    beforeEach(async () => {
+        await startup();
+        await sku_service.createSku(SKU);
+    });
+
+    test('modify SKU position', async () => {
+        await sku_service.modifySkuPositon(1, {position: position.positionID});
+        let res = await sku_service.getSku(1);
+        
+        expect(res[0]).toEqual({
+            id: 1,
+            description : SKU.description,
+            weight : SKU.weight,
+            volume : SKU.volume,
+            notes : SKU.notes,
+            position : position.positionID,
+            availableQuantity : SKU.availableQuantity,
+            price : SKU.price,
+            testDescriptors: [null]
+        });
+    });     
+
+    test('modify SKU with wrong id', async () => {
+        try {
+            await sku_service.modifySku(2, newSKU);
+        } catch (err) {
+            expect(err).toEqual("not found");
+        }
+    }); 
+});
+
+describe("delete SKU", () => {
+    beforeEach(async () => {
+        await startup();
+        await sku_service.createSku(SKU);
+    });
+
+    test('delete SKU', async () => {
+        await sku_service.deleteSku(1);   
+        let res = await sku_service.getSkus();
+        
+        expect(res.length).toEqual(0);
+    });     
+});
+
+
   
 // SKUItem tests
 
