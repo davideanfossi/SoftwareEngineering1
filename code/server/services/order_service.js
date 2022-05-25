@@ -57,8 +57,8 @@ class OrderService {
                 throw {error: 'Restock order with given id not found', code: 404};
             }
             orders.map((order)=>{
-                if(order.STATE != 'DELIVERED'){
-                    throw {error: 'Restock order state is not DELIVERED', code: 422};
+                if(order.state != 'COMPLETEDRETURN'){
+                    throw {error: 'Restock order state is not COMPLETEDRETURN', code: 422};
                 }
             });
             const items = await this.dao.getSkuItemsByRestockOrder(id);
@@ -137,6 +137,15 @@ class OrderService {
         if (body.skuItems.length<1){
             throw { error: `Array must not be empty`, code:422};
         }
+        const orders = await this.dao.getRestockOrder(id);
+        if(orders.length<1){
+            throw {error: 'Restock order with given id not found', code: 404};
+        }
+        orders.map((order)=>{
+            if(order.state != 'DELIVERED'){
+                throw {error: 'Restock order state is not DELIVERED', code: 422};
+            }
+        });
         try {
             await this.dao.modifyRestockOrderSKUs(id, body.skuItems);
             return;
@@ -155,6 +164,15 @@ class OrderService {
         if (body === undefined || body.transportNote === undefined) {
             throw { error: `Invalid body data`, code:422};
         }
+        const orders = await this.dao.getRestockOrder(id);
+        orders.map((order)=>{
+            if(order.state != 'DELIVERY'){
+                throw {error: 'Restock order state is not DELIVERY', code: 422};
+            }
+            if(dayjs(body.transportNote.deliveryDate).isBefore(dayjs(order.issueDate))){
+                throw {error: 'Dates dont match', code: 422};
+            }
+        });
         try {
             await this.dao.modifyRestockOrderNote(id, body.transportNote);
             return;
@@ -191,15 +209,7 @@ class OrderService {
 
     getReturnOrders = async () => {
         try {
-            const orders = await this.dao.getReturnOrders();
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    returnDate: r.ISSUEDATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    restockOrderId: r.SUPPLIERID,
-                }
-            ));
+            const orderDTO = await this.dao.getReturnOrders();
             return orderDTO;
         } catch (error) {
             throw error
@@ -214,15 +224,7 @@ class OrderService {
             throw {error:"Id is less or equal than 0", code:422}
         }
         try {
-            const orders = await this.dao.getReturnOrder(id);
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    returnDate: r.ISSUEDATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    restockOrderId: r.SUPPLIERID,
-                }
-            ));
+            const orderDTO = await this.dao.getReturnOrder(id);
             return orderDTO;
         } catch (error) {
             throw error
@@ -242,12 +244,9 @@ class OrderService {
         if (body === undefined || body.returnDate === undefined || body.products === undefined || body.restockOrderId === undefined) {
             throw { error: `Invalid body data`, error:422};
         }
-        const date = dayjs(body.issueDate).format('YYYY/MM/DD HH:mm') 
+        const date = dayjs(body.returnDate).format('YYYY/MM/DD HH:mm') 
         if(!dayjs(date).isValid()){
             throw {error: "Invalid date!", code:422};
-        }
-        if(Number.isNaN(body.restockOrderId)){
-            throw {error: "Invalid restockOrderId!", code:422};
         }
         try {
             await this.dao.newReturnOrder(body);
@@ -285,16 +284,7 @@ class OrderService {
 
     getInternalOrders = async () => {
         try {
-            const orders = await this.dao.getInternalOrders();
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.CUSTOMERID
-                }
-            ));
+            const orderDTO = await this.dao.getInternalOrders();
             return orderDTO;
         } catch (error) {
             throw error
@@ -303,16 +293,7 @@ class OrderService {
 
     getInternalOrdersIssued = async () => {
         try {
-            const orders = await this.dao.getInternalOrdersIssued();
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.CUSTOMERID
-                }
-            ));
+            const orderDTO = await this.dao.getInternalOrdersIssued();
             return orderDTO;
         } catch (error) {
             throw error
@@ -321,16 +302,7 @@ class OrderService {
 
     getInternalOrdersAccepted = async () => {
         try {
-            const orders = await this.dao.getInternalOrdersAccepted();
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.CUSTOMERID
-                }
-            ));
+            const orderDTO = await this.dao.getInternalOrdersAccepted();
             return orderDTO;
         } catch (error) {
             throw error
@@ -345,16 +317,7 @@ class OrderService {
             throw {error:"Id is less or equal than 0", code:422}
         }
         try {
-            const orders = await this.dao.getInternalOrder(id);
-            const orderDTO = orders.map((r) => (
-                {
-                    id: r.ID,
-                    issueDate: r.ISSUEDATE,
-                    state: r.STATE,
-                    products: JSON.parse(r.PRODUCTS),
-                    supplierID: r.CUSTOMERID
-                }
-            ));
+            const orderDTO = await this.dao.getInternalOrder(id);
             return orderDTO;
         } catch (error) {
             throw error
@@ -397,16 +360,19 @@ class OrderService {
             throw {error:"Id is less or equal than 0", code:422}
         }
         if (body === undefined || body.newState === undefined) {
-            throw { error: `Invalid body data` };
+            throw { error: `Invalid body, missing state`, code:422};
         }
-        let products = []
-        if (body.products !== undefined) {
-            products = body.products
+        const states = ['ISSUED', 'ACCEPTED', 'REFUSED', 'CANCELED', 'COMPLETED']
+        if(!states.includes(body.newState.toUpperCase())){
+            throw { error: `The provided state is not valid`, code:422};
+        }
+        if (body.newState.toUpperCase() =='COMPLETED' && body.products === undefined){
+            throw { error: `Missing products array`, code:422};
         }else{
-            throw { error: `Missing products`, code:422 }
+            body.products = 0;
         }
         try {
-            await this.dao.modifyInternalOrder(id, state, products);
+            await this.dao.modifyInternalOrder(id, body.newState, body.products);
             return;
         } catch (error) {
             throw error
