@@ -210,4 +210,25 @@ router.delete('/skuitems/:rfid/testResult/:id', async (req, res) => {
     }
 })
 
+router.delete('/deleteAllTestDescriptors', async (req, res) => {                // PER TEST
+    try {
+        await db.dropTableTestDescriptors();
+        await db.newTableTestDescriptor();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
+
+router.delete('/deleteAllTestResults', async (req, res) => {                // PER TEST
+    try {
+        await db.dropTableTestResult();
+        await db.newTableTestResults();
+        res.status(204).end();
+    } catch (err) {
+        res.status(500).end();
+    }
+}); 
+
+
 module.exports = router;

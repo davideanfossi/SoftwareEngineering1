@@ -24,7 +24,6 @@ router.get('/restockOrdersIssued', async (req, res) => { // r
         const issued = await service.getIssuedRestockOrders();
         res.status(200).json(issued);
     } catch (err) {
-        console.log(err)
         res.status(500).end();
     }
 });
@@ -37,7 +36,6 @@ router.get('/restockOrders/:id', async (req, res) => { // r
         const order = await service.getRestockOrder(id);
         res.status(200).json(order);
     } catch (err) {
-        console.log(err)
         res.status(err.code).end();
     }
 });
@@ -46,7 +44,6 @@ router.get('/restockOrders/:id/returnItems', async (req, res) => { // r
 
     const id = req.params.id;
     try {
-        const restockOrder = await service.getRestockOrder(id);
         const skuItems = await service.getSkuItemsByRestockOrder(id);
         res.status(200).json(skuItems);
     } catch (err) {
@@ -63,7 +60,6 @@ router.post('/restockOrder', async (req, res) => { //r
         await service.newRestockOrder(body);
         res.status(201).end();
     } catch (err) {
-        console.log(err)
         res.status(err.code).end();
     }
 });
@@ -77,7 +73,6 @@ router.put('/restockOrder/:id', async (req, res) => { // r
         await service.modifyRestockOrderState(id, body);
         res.status(200).end()
     } catch (err) {
-        console.log(err)
         res.status(err.code).end()
     }
 });
@@ -89,7 +84,6 @@ router.put('/restockOrder/:id/skuItems', async (req, res) => { // r
         await service.modifyRestockOrderSKUs(id, body);
         res.status(200).end()
     } catch (err) {
-        console.log(err)
         res.status(err.code).end()
     }
 });
@@ -105,13 +99,12 @@ router.put('/restockOrder/:id/transportNote', async (req, res) => { //r
     }
 });
 
-router.delete('/restockOrder/:id', async (req, res) => {
+router.delete('/restockOrder/:id', async (req, res) => { // r
     let id = req.params.id;
     try {
         await service.deleteRestockOrder(id);
         res.status(204).end()
     } catch (err) {
-        console.log(err)
         res.status(err.code).end()
     }
 });
@@ -128,16 +121,17 @@ router.delete('/restockOrders', async (req, res) => {
 // <----------------- RETURN ORDERS ----------------->
 
 // GET
-router.get('/returnOrders', async (req, res) => {
+router.get('/returnOrders', async (req, res) => { // r
     try {
         const restockOrders = await service.getReturnOrders();
         res.status(200).json(restockOrders);
     } catch (err) {
+        console.log(err)
         res.status(err.code).end();
     }
 });
 
-router.get('/returnOrders/:id', async (req, res) => {
+router.get('/returnOrders/:id', async (req, res) => { // r
     const id = req.params.id;
     try {
         const order = await service.getReturnOrder(id);
@@ -149,7 +143,7 @@ router.get('/returnOrders/:id', async (req, res) => {
 
 // POST
 
-router.post('/returnOrder', async (req, res) => {
+router.post('/returnOrder', async (req, res) => { // r
     let body = req.body;
     try {
         await service.newTableReturnOrder();
@@ -162,7 +156,7 @@ router.post('/returnOrder', async (req, res) => {
 
 // DELETE
 
-router.delete('/returnOrder/:id', async (req, res) => {
+router.delete('/returnOrder/:id', async (req, res) => { // r
     try {
         let id = req.params.id;
         await service.deleteReturnOrder(id);
@@ -185,7 +179,7 @@ router.delete('/returnOrders', async (req, res) => {
 
 // GET
 
-router.get('/internalOrders', async (req, res) => {
+router.get('/internalOrders', async (req, res) => { // r
     try {
         const restockOrders = await service.getInternalOrders();
         res.status(200).json(restockOrders);
@@ -194,7 +188,7 @@ router.get('/internalOrders', async (req, res) => {
     }
 });
 
-router.get('/internalOrdersIssued', async (req, res) => {
+router.get('/internalOrdersIssued', async (req, res) => { // r
     try {
         const restockOrders = await service.getInternalOrdersIssued();
         res.status(200).json(restockOrders);
@@ -203,7 +197,7 @@ router.get('/internalOrdersIssued', async (req, res) => {
     }
 });
 
-router.get('/internalOrdersAccepted', async (req, res) => {
+router.get('/internalOrdersAccepted', async (req, res) => { // r
     try {
         const restockOrders = await service.getInternalOrdersAccepted();
         res.status(200).json(restockOrders);
@@ -212,7 +206,7 @@ router.get('/internalOrdersAccepted', async (req, res) => {
     }
 });
 
-router.get('/internalOrders/:id', async (req, res) => {
+router.get('/internalOrders/:id', async (req, res) => { // r
     const id = req.params.id;
     try {
         const order = await service.getInternalOrder(id);
@@ -224,7 +218,7 @@ router.get('/internalOrders/:id', async (req, res) => {
 
 // POST
 
-router.post('/internalOrders', async (req, res) => {
+router.post('/internalOrders', async (req, res) => { // r
     let body = req.body;
     try {
         await service.newTableInternalOrder();
@@ -237,7 +231,7 @@ router.post('/internalOrders', async (req, res) => {
 
 // PUT 
 
-router.put('/internalOrders/:id', async (req, res) => {
+router.put('/internalOrders/:id', async (req, res) => { // r
     let body = req.body;
     let id = req.params.id;
     try {
