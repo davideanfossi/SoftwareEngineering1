@@ -4,6 +4,14 @@ class TestService {
         this.dao = dao;
     }
 
+    newTableTestDescriptor = async () => {
+        const res = await this.dao.newTableTestDescriptor();
+    }
+
+    dropTableTestDescriptors = async () => {
+        const res = await this.dao.dropTableTestDescriptors();
+    }
+
     getTestDescriptors = async () => {
         const rows = await this.dao.getTestDescriptors();
         const TestDescriptors = rows.map((r) => (
@@ -53,6 +61,14 @@ class TestService {
     }
 
     // -----------------------------------------------------------
+
+    newTableTestResults = async () => {
+        const res = await this.dao.newTableTestResults();
+    }
+
+    dropTableTestResult = async () => {
+        const res = await this.dao.dropTableTestResult();
+    }
 
     getTestResults = async (rfid) => {
         const rows = await this.dao.getTestResults(rfid);
