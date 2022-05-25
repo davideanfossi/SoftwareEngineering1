@@ -7,13 +7,15 @@ class controlSku {
             if (err) throw err;
         });
 
-        const sql = `PRAGMA foreign_keys=on;`;
+        const sql = `PRAGMA foreign_keys = ON;`;
         this.db.run(sql, (err) => {
             if (err) {
                 throw err;
             }
         });
     }
+
+
 
     //SKU
 
@@ -29,12 +31,14 @@ class controlSku {
                 AVAILABLE_QUANTITY INT, 
                 PRICE INT,
                 CONSTRAINT fk_position FOREIGN KEY (POSITION) REFERENCES POSITION(POSITIONID)
+                ON DELETE CASCADE
                 )`;
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);
                     return;
                 }
+                
                 resolve(this.lastID);
             });
         });
@@ -189,11 +193,13 @@ class controlSku {
 
             const sql2 = "DELETE FROM SKU WHERE ID = ?"
             this.db.all(sql2, [id], (err, rows) => {
+
                 if (err) {
+
                     reject(err);
                     return;
                 }
-
+                
                 resolve('done')
             })
         });
@@ -529,7 +535,7 @@ class controlSku {
 
     newTableItem() { 
         return new Promise((resolve, reject) => {                                                                  
-            const sql = "CREATE TABLE IF NOT EXISTS ITEM(ID INTEGER, DESCRIPTION TEXT, PRICE REAL, SKUID INTEGER, SUPPLIERID INTEGER, PRIMARY KEY(ID), FOREIGN KEY(SKUID) REFERENCES SKU(ID))";
+            const sql = "CREATE TABLE IF NOT EXISTS ITEM(ID INTEGER, DESCRIPTION TEXT, PRICE REAL, SKUID INTEGER, SUPPLIERID INTEGER, PRIMARY KEY(ID, SKUID, SUPPLIERID), FOREIGN KEY(SKUID) REFERENCES SKU(ID))";
             this.db.run(sql, (err) => {
                 if (err) {
                     reject(err);

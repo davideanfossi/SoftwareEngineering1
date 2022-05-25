@@ -46,9 +46,11 @@ const SKU2 ={
     price : 10.99,
 }
 
+
 describe("get SKUItem", () => {
     beforeEach(async () => {
         await controller.newTableSKUItem();
+        await controller.deleteAllItem();
         await controller.deleteAllSKUItem();
         await controller.dropSKUTable();
         await controller.newTableSku();
@@ -94,6 +96,7 @@ async function testSKUItem(SKUItem) {
 describe("modify SKUItems", () => {
     beforeEach(async () => {
         await controller.deleteAllSKUItem();
+        await controller.deleteAllItem();
         await controller.dropSKUTable();
         await controller.newTableSku();
         await controller.createSku(SKU1);
@@ -123,11 +126,12 @@ describe("modify SKUItems", () => {
 
 describe("create SKUItems", () => {
     beforeEach(async () => {
-       await controller.deleteAllSKUItem();
-       await controller.dropSKUTable();
-       await controller.newTableSku();
-       await controller.createSku(SKU1); 
-       await controller.createSku(SKU2);
+        await controller.deleteAllSKUItem();
+        await controller.deleteAllItem();
+        await controller.dropSKUTable();
+        await controller.newTableSku();
+        await controller.createSku(SKU1); 
+        await controller.createSku(SKU2);
     })
     describe("create SKUItem data", () => {
         test('SKUItem', async () => {                                           // test 4
@@ -166,6 +170,7 @@ describe("create SKUItems", () => {
 describe("get SKUItemAvailable", () => {
     beforeEach(async () => {
         await controller.deleteAllSKUItem();
+        await controller.deleteAllItem();
         await controller.dropSKUTable();
         await controller.newTableSku();
         await controller.createSku(SKU1);
@@ -480,6 +485,7 @@ const Item2 = {
 describe("get Item", () => {
     beforeEach(async () => {
         await controller.newTableItem();
+        await controller.deleteAllSKUItem();
         await controller.deleteAllItem();
         await controller.dropSKUTable();
         await controller.newTableSku();
@@ -522,6 +528,7 @@ async function testItem(Item) {
 
 describe("modify Items", () => {
     beforeEach(async() => {
+        await controller.deleteAllSKUItem();
         await controller.deleteAllItem();
         await controller.dropSKUTable();
         await controller.newTableSku();
@@ -564,7 +571,8 @@ describe("modify Items", () => {
 
 describe("delete Items", () => {
     beforeEach(async () => {
-        await sku_service.deleteAllItem();
+        await controller.deleteAllSKUItem();
+        await controller.deleteAllItem();
         await controller.dropSKUTable();
         await controller.newTableSku();
         await controller.createSku(SKU1);
