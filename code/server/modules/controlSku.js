@@ -113,6 +113,8 @@ class controlSku {
             const sql = 'INSERT INTO SKU(DESCRIPTION, WEIGHT, VOLUME, NOTES, AVAILABLE_QUANTITY, PRICE) VALUES(?, ?, ?, ?, ?, ?)';
             this.db.run(sql, [sku.description, sku.weight, sku.volume, sku.notes, sku.availableQuantity, sku.price], (err) => {
                 if (err) {
+                    console.log(err);
+
                     reject(err);
                     return;
                 }
@@ -154,7 +156,7 @@ class controlSku {
             const sql1 = "UPDATE SKU SET POSITION = ? WHERE ID = ?"
             this.db.all(sql1, [position.position, id], (err, rows) => {
                 if (err) {
-                    reject(err);
+                    reject("not found");
                     return;
                 }
                 resolve('done');

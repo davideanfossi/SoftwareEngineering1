@@ -243,7 +243,9 @@ router.put('/sku/:id/position', async (req, res) => {
     let position = req.body;
     let data;
     if (position === undefined || position.position === undefined || position.position == '') {
-        return res.status(422).json({ error: `Invalid position data` });
+        return res.status(422).json({ error: `validation of position through the algorithm failed or 
+        position isn't capable to satisfy volume and weight constraints for available quantity 
+        of sku or position is already assigned to a sku` });
     }
 
     try {
@@ -254,7 +256,7 @@ router.put('/sku/:id/position', async (req, res) => {
         res.status(200).end()
     } catch (err) {
         if (err == 'not found')
-            res.status(404).json({ error: `wrong id` })
+            res.status(404).json({ error: `Position not existing or SKU not existing` })
         else
             console.log(err);
         res.status(503).json({ err }).end()

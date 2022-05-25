@@ -6,7 +6,7 @@ chai.should();
 const app = require('../server');
 var agent = chai.request.agent(app);
 
-describe.only('test testDescriptor apis', () => {
+describe('test testDescriptor apis', () => {
 
     beforeEach(async () => {
         await agent.delete('/api/deleteAllTestResults');

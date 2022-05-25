@@ -15,6 +15,273 @@ const SKU ={
     price : 10.99,
 }
 
+position = {
+    positionID:"800234543412",
+    aisleID: "8002",
+    row: "3454",
+    col: "3412",
+    maxWeight: 1000,
+    maxVolume: 1000
+}
+
+describe.only('test first 6 SKU apis', () => {
+
+    beforeEach(async () => {
+        await agent.delete('/api/deletePositionTable');
+        await agent.post('/api/position').send(position);
+        await agent.delete('/api/deleteAllTestDescriptors');
+        await agent.delete('/api/deleteAllTestResults');
+        await agent.delete('/api/deleteSKUItemTable');
+        await agent.delete('/api/deleteItemTable');
+        await agent.delete('/api/deleteSKUTable');
+    })
+
+    getSKUs(200, "a new sku", 100, 50, "first SKU", 10.99, 50);
+    getSKU(200, "a new sku", 100, 50, "first SKU", 10.99, 50);
+    getSKU(404, "a new sku", 100, 50, "first SKU", 10.99, 50);
+
+    createSKU(201, "a new sku", 100, 50, "first SKU", 10.99, 50);
+    createSKU(422, "", "", "", "", "", "");
+
+    modifySKU(200, "a new sku", 100, 50, "first SKU", 10.99, 50);
+    modifySKU(404, "a new sku", 100, 50, "first SKU", 10.99, 50);
+    modifySKU(422, "a new sku", 100, 50, "first SKU", 10.99, 50);
+
+    modifySkuPositon(200, position.positionID, "a new sku", 100, 50, "first SKU", 10.99, 50);
+    modifySkuPositon(404, "5234541545", "a new sku", 100, 50, "first SKU", 10.99, 50);
+    modifySkuPositon(422, "", "a new sku", 100, 50, "first SKU", 10.99, 50),
+
+    deleteSKU(204, "a new sku", 100, 50, "first SKU", 10.99, 50);
+    deleteSKU(422, "a new sku", 100, 50, "first SKU", 10.99, 50);
+});
+
+
+function getSKUs(expectedHTTPStatus, description, weight, volume, notes, price, availableQuantity) {
+    it('getting SKUs', function (done) {
+        let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+        agent.post('/api/sku')
+            .send(SKU)
+            .then(function (res) {
+                agent.get('/api/skus')
+                    .then(function (r) {
+                        r.should.have.status(expectedHTTPStatus);
+                        r.body[0].id.should.equal(1);
+                        r.body[0].description.should.equal(description);
+                        r.body[0].weight.should.equal(weight);
+                        r.body[0].volume.should.equal(volume);
+                        r.body[0].notes.should.equal(notes);
+                        r.body[0].price.should.equal(price);
+                        r.body[0].availableQuantity.should.equal(availableQuantity);
+                        done();
+                    });
+            });
+        });
+}
+
+function getSKU(expectedHTTPStatus, description, weight, volume, notes, price, availableQuantity) {
+    if (expectedHTTPStatus === 200) {
+        it('getting SKU', function (done) {
+            let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+            agent.post('/api/sku')
+                .send(SKU)
+                .then(function (res) {
+                    res.should.have.status(201);
+                    agent.get('/api/skus/1')
+                        .then(function (r) {
+                            r.should.have.status(expectedHTTPStatus);
+                            r.body[0].id.should.equal(1);
+                            r.body[0].description.should.equal(description);
+                            r.body[0].weight.should.equal(weight);
+                            r.body[0].volume.should.equal(volume);
+                            r.body[0].notes.should.equal(notes);
+                            r.body[0].price.should.equal(price);
+                            r.body[0].availableQuantity.should.equal(availableQuantity);
+                            done();
+                        });
+                });
+            });
+    } else {
+        it('getting SKU with wrong id', function (done) {
+            let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+            agent.post('/api/sku')
+                .send(SKU)
+                .then(function (res) {
+                    res.should.have.status(201);
+                    agent.get('/api/skus/2')
+                        .then(function (r) {
+                            r.should.have.status(expectedHTTPStatus);
+                            done();
+                        });
+                });
+            });
+    }
+}
+
+function createSKU(expectedHTTPStatus, description, weight, volume, notes, price, availableQuantity) {
+    if (expectedHTTPStatus === 201){
+        it('creating SKU', function (done) {
+        let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+        agent.post('/api/sku')
+            .send(SKU)
+            .then(function (res) {
+                res.should.have.status(expectedHTTPStatus);
+                done();
+            });
+        });
+    } else {
+        it('creating SKU with empty body', function (done) {
+            let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+            agent.post('/api/sku')
+                .send(SKU)
+                .then(function (res) {
+                    res.should.have.status(expectedHTTPStatus);
+                    done();
+                });
+            });
+    }
+    
+}
+
+function modifySKU(expectedHTTPStatus, description, weight, volume, notes, price, availableQuantity) {
+    if (expectedHTTPStatus === 200){
+        it('modifying SKU', function (done) {
+        let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+        agent.post('/api/sku')
+            .send(SKU)
+            .then(function (res) {
+                res.should.have.status(201);
+                let newSKU = { newDescription: "a modified sku", newWeight: weight, newVolume: volume, newNotes: notes, newPrice: 8.8, newAvailableQuantity: 3}
+                agent.put('/api/sku/1')
+                    .send(newSKU)
+                    .then(function (res) {
+                        res.should.have.status(expectedHTTPStatus); 
+                        done();
+                });
+            });
+        });
+    } else if (expectedHTTPStatus === 404) {
+        it('modifying SKU with wrong id', function (done) {
+            let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+            agent.post('/api/sku')
+                .send(SKU)
+                .then(function (res) {
+                    res.should.have.status(201);
+                    let newSKU = { newDescription: "a modified sku", newWeight: weight, newVolume: volume, newNotes: notes, newPrice: 8.8, newAvailableQuantity: 3}
+                    agent.put('/api/sku/2')
+                        .send(newSKU)
+                        .then(function (res) {
+                            res.should.have.status(expectedHTTPStatus); 
+                            done();
+                    });
+                });
+            });
+    } else {
+        it('modifying SKU with empty body', function (done) {
+            let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+            agent.post('/api/sku')
+                .send(SKU)
+                .then(function (res) {
+                    res.should.have.status(201);
+                    let newSKU = { newDescription: "", newWeight: weight, newVolume: volume, newNotes: "", newPrice: 8.8, newAvailableQuantity: 3}
+                    agent.put('/api/sku/1')
+                        .send(newSKU)
+                        .then(function (res) {
+                            res.should.have.status(expectedHTTPStatus); 
+                            done();
+                    });
+                });
+            });
+    }
+    
+}
+
+function modifySkuPositon(expectedHTTPStatus, positionId, description, weight, volume, notes, price, availableQuantity) {
+    if (expectedHTTPStatus === 200){
+        it('modifying SKU positon', function (done) {
+        let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+        agent.post('/api/sku')
+            .send(SKU)
+            .then(function (res) {
+                res.should.have.status(201);
+                let position = { position: positionId};
+                agent.put('/api/sku/1/position')
+                    .send(position)
+                    .then(function (res) {
+                        res.should.have.status(expectedHTTPStatus); 
+                        done();
+                });
+            });
+        });
+    } else if (expectedHTTPStatus === 404) {
+        it('modifying SKU positon with wrong position id', function (done) {
+            let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+            agent.post('/api/sku')
+                .send(SKU)
+                .then(function (res) {
+                    res.should.have.status(201);
+                    let position = { position: positionId};
+                    agent.put('/api/sku/1/position')
+                        .send(position)
+                        .then(function (res) {
+                            res.should.have.status(expectedHTTPStatus); 
+                            done();
+                    });
+                });
+            });
+    } else {
+        it('modifying SKU positon with empty body', function (done) {
+            let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+            agent.post('/api/sku')
+                .send(SKU)
+                .then(function (res) {
+                    res.should.have.status(201);
+                    let position = { position: positionId};
+                    agent.put('/api/sku/1/position')
+                        .send(position)
+                        .then(function (res) {
+                            res.should.have.status(expectedHTTPStatus); 
+                            done();
+                    });
+                });
+            });
+    }
+}
+
+function deleteSKU(expectedHTTPStatus, description, weight, volume, notes, price, availableQuantity) {
+    if (expectedHTTPStatus === 204){
+        it('deleting SKU', function (done) {
+        let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+        agent.post('/api/sku')
+            .send(SKU)
+            .then(function (res) {
+                res.should.have.status(201);
+                agent.delete('/api/skus/1')
+                    .then(function (res) {
+                        res.should.have.status(expectedHTTPStatus);
+                        done();
+                    });
+            });
+        });
+    } else {
+        it('deleting SKU with wrong id', function (done) {
+            let SKU = { description: description, weight: weight, volume: volume, notes: notes, price: price, availableQuantity: availableQuantity}
+            agent.post('/api/sku')
+                .send(SKU)
+                .then(function (res) {
+                    res.should.have.status(201);
+                    agent.delete('/api/skus/2')
+                        .then(function (res) {
+                            res.should.have.status(expectedHTTPStatus);
+                            done();
+                        });
+                });
+            });
+    }
+    
+}
+
+
+
 describe('test SKUItem apis', () => {
 
     beforeEach(async () => {
